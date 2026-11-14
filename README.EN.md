@@ -11,6 +11,25 @@ recording. Features include five themes, brightness/volume glow, charging animat
 configurable alerts and a compact now-playing view. The interface and onboarding
 are currently in Russian.
 
+## Screenshots
+
+"Midnight" theme on dark wallpaper. The neon glow belongs to the brightness, volume,
+alert and charging indicators that replace the system HUD around the notch.
+
+![Panel at the notch](docs/screenshots/01-panel.png)
+
+Brightness indicator animation:
+
+![Brightness indicator animation](docs/screenshots/neon-brightness.gif)
+
+| Brightness | Volume |
+|---|---|
+| ![Brightness](docs/screenshots/02-hud-brightness.png) | ![Volume](docs/screenshots/03-hud-volume.png) |
+| **Memory alert** | **Charging pulse** |
+| ![Alert](docs/screenshots/04-alert-memory.png) | ![Charging](docs/screenshots/05-charge-pulse.png) |
+| **Settings → Design** | **First launch** |
+| ![Settings](docs/screenshots/06-settings-design.png) | ![Onboarding](docs/screenshots/07-onboarding.png) |
+
 ## Install
 
 Download the Apple Silicon DMG, open it, and drag NotchDeck into Applications.
