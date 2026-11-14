@@ -1,0 +1,17 @@
+.DS_Store
+Build/
+Dist/
+*.dmg
+*.pkg
+*.zip
+*.log
+*.mov
+*.mp4
+*.plist
+*.p12
+*.pem
+*.key
+.env*
+!.env.example
+*.xcuserstate
+xcuserdata/
