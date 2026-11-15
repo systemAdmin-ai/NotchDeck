@@ -2,9 +2,12 @@ import AppKit
 import UniformTypeIdentifiers
 
 enum PanelStyle:String,CaseIterable {
-    case glass, graphite, midnight, aurora, neon
+    case auto, light, dark, glass, graphite, midnight, aurora, neon
     var title:String {
         switch self {
+        case .auto:return "Авто"
+        case .light:return "Светлый"
+        case .dark:return "Тёмный"
         case .glass:return "Стекло"
         case .graphite:return "Графит"
         case .midnight:return "Полночь"
@@ -14,6 +17,9 @@ enum PanelStyle:String,CaseIterable {
     }
     var detail:String {
         switch self {
+        case .auto:return "Адаптивное стекло macOS: фон просвечивает, а контраст следует светлой или тёмной теме системы."
+        case .light:return "Молочное стекло с тёмными значками и текстом."
+        case .dark:return "Затемнённое стекло со светлыми значками и текстом."
         case .glass:return "Размытый фон, лёгкая прозрачность и тонкая светлая кромка."
         case .graphite:return "Матовая тёмная поверхность с мягкими контрастами."
         case .midnight:return "Глубокий чёрный фон: минимализм без отвлекающих эффектов."
@@ -38,6 +44,9 @@ final class Preferences {
         self.defaults = defaults
         applications = defaults.data(forKey: "NotchDeck.applications")
             .flatMap { try? JSONDecoder().decode([AppShortcut].self, from: $0) } ?? []
+    }
+    func reloadFromDefaults() {
+        applications=defaults.data(forKey:"NotchDeck.applications").flatMap {try? JSONDecoder().decode([AppShortcut].self,from:$0)} ?? []
     }
     func bool(_ key: String, fallback: Bool = true) -> Bool {
         defaults.object(forKey: "NotchDeck."+key) == nil ? fallback : defaults.bool(forKey: "NotchDeck."+key)
@@ -119,6 +128,7 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
         _=text("Приложения в чёлке",at:NSPoint(x:18,y:16),in:view,size:16)
         _=text("Добавляй приложения, убирай их из панели и меняй порядок. Удаление из списка не удаляет приложение с Mac.",at:NSPoint(x:18,y:48),in:view)
         _=button("Добавить приложение…",frame:NSRect(x:18,y:98,width:220,height:30),in:view,action:#selector(addApp))
+        _=button("Профили панели…",frame:NSRect(x:258,y:98,width:220,height:30),in:view,action:#selector(openProfiles))
         let scroll=NSScrollView(frame:NSRect(x:18,y:142,width:524,height:280))
         scroll.hasVerticalScroller=true;scroll.borderType = .bezelBorder
         appList=FlippedView(frame:NSRect(x:0,y:0,width:500,height:280))
@@ -174,10 +184,10 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
         styleDescription=description
         let preview=NotchBackgroundView(frame:NSRect(x:92,y:288,width:360,height:112))
         let title=NSTextField(labelWithString:"NotchDeck")
-        title.font = .systemFont(ofSize:15,weight:.semibold);title.textColor = .white
+        title.font = .systemFont(ofSize:15,weight:.semibold);title.textColor = PanelPalette.foreground
         title.frame=NSRect(x:20,y:66,width:300,height:24)
         let subtitle=NSTextField(labelWithString:"RAM  17,3 ГБ     ·     Батарея  46%")
-        subtitle.font = .systemFont(ofSize:12);subtitle.textColor=NSColor(white:1,alpha:0.8)
+        subtitle.font = .systemFont(ofSize:12);subtitle.textColor=PanelPalette.gray(1,alpha:0.8)
         subtitle.frame=NSRect(x:20,y:32,width:320,height:22)
         preview.addSubview(title);preview.addSubview(subtitle);view.addSubview(preview);stylePreview=preview
         _=text("Выбранный стиль применяется сразу и сохраняется после перезапуска.",at:NSPoint(x:18,y:416),in:view)
@@ -235,6 +245,7 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
             }
         }
     }
+    @objc private func openProfiles() {ProfileManager.shared.show()}
     @objc private func addApp() {
         let panel=NSOpenPanel();panel.title="Добавить приложение в NotchDeck";panel.allowedContentTypes=[.applicationBundle]
         panel.directoryURL=URL(fileURLWithPath:"/Applications");panel.allowsMultipleSelection=true;panel.canChooseDirectories=false

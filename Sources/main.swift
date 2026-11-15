@@ -6,6 +6,10 @@ enum CLI {
     static func run(_ args: [String]) {
         let cmd = args[1]
         switch cmd {
+        case "--test-profiles":
+            ProfileChecks.run()
+        case "--profiles":
+            DistributedNotificationCenter.default().postNotificationName(AppIdentity.notification("profiles"),object:nil,userInfo:nil,deliverImmediately:true)
         case "--render-onboarding":
             Onboarding.shared.render(to:args.count>2 ? args[2]:"/tmp/notchdeck-onboarding")
         case "--render-charge":
@@ -22,10 +26,10 @@ enum CLI {
             view.renderTabs(to:args.count>2 ? args[2] : "/tmp/notchdeck-settings")
             print("SETTINGS RENDERED")
         case "--demo":
-            DistributedNotificationCenter.default().postNotificationName(.init("com.notchdeck.app.demo"),object:nil,userInfo:nil,deliverImmediately:true)
+            DistributedNotificationCenter.default().postNotificationName(AppIdentity.notification("demo"),object:nil,userInfo:nil,deliverImmediately:true)
             print("Запущен 12-секундный тест в установленном NotchDeck")
         case "--notes":
-            DistributedNotificationCenter.default().postNotificationName(.init("com.notchdeck.app.notes"),object:nil,userInfo:nil,deliverImmediately:true)
+            DistributedNotificationCenter.default().postNotificationName(AppIdentity.notification("notes"),object:nil,userInfo:nil,deliverImmediately:true)
         case "--network-check":
             _=Metrics.shared.netRate()
             Thread.sleep(forTimeInterval:1)
@@ -34,7 +38,7 @@ enum CLI {
         case "--connection-check":
             print("Happ=\(ConnectionMonitor.happStatus()) CheckPoint=\(ConnectionMonitor.checkpointStatus())")
         case "--settings":
-            DistributedNotificationCenter.default().postNotificationName(.init("com.notchdeck.app.settings"),object:nil,userInfo:nil,deliverImmediately:true)
+            DistributedNotificationCenter.default().postNotificationName(AppIdentity.notification("settings"),object:nil,userInfo:nil,deliverImmediately:true)
         case "--selftest":
             let g = Geometry.measure()
             print("screen=\(Int(g.screen.frame.width))x\(Int(g.screen.frame.height)) scale=\(g.screen.backingScaleFactor)")
@@ -233,6 +237,8 @@ enum CLI {
             MediaKeyTap.shared.onChange = { _, _, _ in }
             print("AX=\(AXIsProcessTrusted()) tap=\(MediaKeyTap.shared.start())")
             MediaKeyTap.shared.stop()
+        case "--test-halo":
+            NotchHUD.testHalo()
         case "--test-hud-lifecycle":
             NotchHUD.testLifecycle()
         case "--island":
@@ -366,12 +372,12 @@ enum CLI {
         case "--rss-sample":
             print("pid=\(ProcessInfo.processInfo.processIdentifier)")
         case "--notify":
-            let name = "com.notchdeck.app." + (args.count > 2 ? args[2] : "expand")
+            let name = AppIdentity.bundleID + "." + (args.count > 2 ? args[2] : "expand")
             DistributedNotificationCenter.default().postNotificationName(.init(name), object: nil, userInfo: nil, deliverImmediately: true)
             print("posted \(name)")
         case "--click":
             guard args.count > 3, let x = Double(args[2]), let y = Double(args[3]) else { print("нужны x y"); break }
-            guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: "com.notchdeck.app").first else {
+            guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: AppIdentity.bundleID).first else {
                 print("приложение не запущено"); break
             }
             let pt = CGPoint(x: x, y: y)
@@ -439,6 +445,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let menu = NSMenu()
         menu.addItem(withTitle: "Показать панель", action: #selector(showPanel), keyEquivalent: "").target = self
+        menu.addItem(withTitle:"Профили панели…",action:#selector(profiles),keyEquivalent:"").target=self
         menu.addItem(withTitle:"Быстрые заметки",action:#selector(notes),keyEquivalent:"").target=self
         menu.addItem(withTitle:"Быстрый тест чёлки",action:#selector(demo),keyEquivalent:"").target=self
         menu.addItem(withTitle: "Настройки…", action: #selector(openSettings), keyEquivalent: ",").target = self
@@ -451,6 +458,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
     }
 
+    @objc private func profiles() {ProfileManager.shared.show()}
     @objc private func onboarding() {Onboarding.shared.show()}
     @objc private func showPanel() { deck.expand() }
     @objc private func notes() {QuickNotes.shared.show()}

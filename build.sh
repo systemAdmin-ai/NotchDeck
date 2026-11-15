@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 export CLANG_MODULE_CACHE_PATH="${CLANG_MODULE_CACHE_PATH:-$PWD/Build/ModuleCache}"
 export SWIFT_MODULECACHE_PATH="$CLANG_MODULE_CACHE_PATH"
 
-APP="Build/NotchDeck.app"
+APP="Build/${APP_NAME:-NotchDeck}.app"
 BIN="$APP/Contents/MacOS/NotchDeck"
 
 rm -rf "$APP"
@@ -20,8 +20,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleExecutable</key><string>NotchDeck</string>
   <key>CFBundleIdentifier</key><string>com.notchdeck.app</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.1.0</string>
-  <key>CFBundleVersion</key><string>45</string>
+  <key>CFBundleShortVersionString</key><string>2.0.0</string>
+  <key>CFBundleVersion</key><string>200</string>
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>LSUIElement</key><true/>
@@ -34,11 +34,20 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
+# An isolated bundle identity lets the local Preview run with its own preferences.
+if [ -n "${BUNDLE_ID:-}" ]; then
+  [[ "$BUNDLE_ID" =~ ^[A-Za-z0-9.-]+$ ]] || exit 2
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" "$APP/Contents/Info.plist"
+fi
+if [ -n "${APP_NAME:-}" ]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $APP_NAME" "$APP/Contents/Info.plist"
+fi
+
 swiftc -target arm64-apple-macos26.0 -swift-version 5 -O -o "$BIN" \
   Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
   Sources/NowPlaying.swift Sources/Tools.swift Sources/Procs.swift Sources/Keys.swift \
   Sources/ToolPanels.swift Sources/ProcPanel.swift \
-  Sources/Onboarding.swift Sources/ScreenRecording.swift Sources/PowerEvents.swift Sources/Connections.swift Sources/Notes.swift Sources/Checks.swift Sources/Preferences.swift Sources/SystemMedia.swift Sources/HUDMotion.swift Sources/NotchHUD.swift Sources/Cleanup.swift Sources/Views.swift Sources/Panel.swift Sources/main.swift \
+  Sources/Profiles.swift Sources/ProfileChecks.swift Sources/Onboarding.swift Sources/ScreenRecording.swift Sources/PowerEvents.swift Sources/Connections.swift Sources/Notes.swift Sources/Checks.swift Sources/Preferences.swift Sources/SystemMedia.swift Sources/HUDMotion.swift Sources/NotchHUD.swift Sources/Cleanup.swift Sources/Views.swift Sources/Panel.swift Sources/main.swift \
   -framework AppKit -framework CoreAudio -framework IOKit \
   -framework AVFoundation -framework SystemConfiguration -framework ImageIO -framework ServiceManagement -framework CoreGraphics 2>&1 | tail -40
 

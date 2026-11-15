@@ -1,5 +1,58 @@
 import AppKit
 import ApplicationServices
+import ScreenCaptureKit
+
+// Only the narrow strip behind the halo is sampled, in memory, with existing permission.
+// Excluding this process prevents the glow from feeding back into its own brightness.
+private final class HaloBackdrop {
+    static let shared=HaloBackdrop()
+    private var busy=false
+    private var requested=Double(-100)
+    private var values=[Double]()
+    private let w=256,h=24
+    static func gain(_ brightness:Double)->Double {1+0.70*max(0,min(1,brightness))}
+    var sampleCount:Int {values.count}
+    var sampleRange:String {"\(values.min() ?? 0)...\(values.max() ?? 0)"}
+    func brightness(x:Double,y:Double)->Double {
+        guard values.count == w*h else{return 0}
+        let fx=max(0,min(Double(w-1),x*Double(w-1))),fy=max(0,min(Double(h-1),y*Double(h-1)))
+        let x0=Int(fx),y0=Int(fy),x1=min(w-1,x0+1),y1=min(h-1,y0+1)
+        let a=fx-Double(x0),b=fy-Double(y0)
+        return (values[y0*w+x0]*(1-a)+values[y0*w+x1]*a)*(1-b)
+            + (values[y1*w+x0]*(1-a)+values[y1*w+x1]*a)*b
+    }
+    func refresh() {
+        let now=ProcessInfo.processInfo.systemUptime
+        guard !busy,now-requested>0.8,CGPreflightScreenCaptureAccess() else{return}
+        requested=now;busy=true
+        let geometry=Geometry.measure(),rect=NotchHUD.overlayFrame()
+        let displayID=(geometry.screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? CGMainDisplayID()
+        Task { @MainActor in
+            defer {self.busy=false}
+            do {
+                let content=try await SCShareableContent.excludingDesktopWindows(false,onScreenWindowsOnly:true)
+                guard let display=content.displays.first(where:{$0.displayID==displayID}) else{return}
+                let own=content.windows.filter {$0.owningApplication?.processID == ProcessInfo.processInfo.processIdentifier}
+                let filter=SCContentFilter(display:display,excludingWindows:own)
+                let config=SCStreamConfiguration();config.width=self.w;config.height=self.h;config.showsCursor=false
+                config.sourceRect=CGRect(x:rect.minX-geometry.screen.frame.minX,
+                    y:geometry.screen.frame.maxY-rect.maxY,width:rect.width,height:rect.height)
+                let image=try await SCScreenshotManager.captureImage(contentFilter:filter,configuration:config)
+                let info=CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+                guard let context=CGContext(data:nil,width:self.w,height:self.h,bitsPerComponent:8,
+                    bytesPerRow:self.w*4,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:info),let data=context.data else{return}
+                context.draw(image,in:CGRect(x:0,y:0,width:self.w,height:self.h))
+                let bytes=data.bindMemory(to:UInt8.self,capacity:self.w*self.h*4)
+                var next=[Double](repeating:0,count:self.w*self.h)
+                for i in next.indices {
+                    let luma=(0.2126*Double(bytes[i*4])+0.7152*Double(bytes[i*4+1])+0.0722*Double(bytes[i*4+2]))/255
+                    next[i]=self.values.count == next.count ? self.values[i]*0.65+luma*0.35:luma
+                }
+                self.values=next
+            } catch {self.values=[]}
+        }
+    }
+}
 
 // MARK: - Индикатор яркости и громкости у чёлки
 //
@@ -158,7 +211,7 @@ final class NotchHUD {
         let hasLevel=(levelUntil.map{$0>Date()} ?? false)
         if currentAlert != .off && !hasLevel && !panelExpanded {
             window.orderFrontRegardless();alertOutline?.setVisible(true)
-        } else {window.orderOut(nil)}
+        } else {alertOutline?.setVisible(false);window.orderOut(nil)}
     }
 
     /// Покой: ничего не показываем.
@@ -205,6 +258,20 @@ final class NotchHUD {
     }
 
     /// Exercise the real timer/window lifecycle without writing system levels.
+    static func testHalo() {
+        precondition(HaloBackdrop.gain(0)==1 && abs(HaloBackdrop.gain(1)-1.7)<0.0001)
+        precondition(HaloBackdrop.gain(-1)==1 && abs(HaloBackdrop.gain(2)-1.7)<0.0001)
+        let sampler=HaloBackdrop.shared
+        precondition(sampler.brightness(x:0.5,y:0.5)==0)
+        if CGPreflightScreenCaptureAccess() {
+            sampler.refresh()
+            let deadline=Date().addingTimeInterval(5)
+            while sampler.sampleCount==0 && Date()<deadline {RunLoop.main.run(mode:.default,before:Date().addingTimeInterval(0.01))}
+            precondition(sampler.sampleCount>0,"Backdrop sampling failed")
+        }
+        print("HALO PASS: bounded contrast gain, safe fallback; backdrop samples=\(sampler.sampleCount), range=\(sampler.sampleRange)")
+    }
+
     static func testLifecycle() {
         let hud = shared
         func wait(_ seconds: Double) {
@@ -214,6 +281,9 @@ final class NotchHUD {
         func check(_ ok: Bool, _ message: String) {
             if !ok { fputs("HUD LIFECYCLE FAIL: \(message)\n", stderr); exit(1) }
         }
+        let samples=(0...480).map {IslandView.batteryGlow(at:Double($0)/100)}
+        check(samples.allSatisfy {$0 >= 0.44 && $0 <= 0.54}, "battery glow too strong")
+        check(abs(IslandView.batteryGlow(at:0)-IslandView.batteryGlow(at:4.8))<0.00001,"battery pulse loop jumps")
         hud.showLevel(kind: .brightness, value: 1, muted: false)
         wait(0.30)
         check(hud.window?.isVisible == true, "not visible after opening")
@@ -341,6 +411,13 @@ final class NotchHUD {
 // MARK: - Компактная плашка и линия в прозрачной области экрана
 final class IslandView: NSView {
     private var kind: LevelKind = .volume
+    // A restrained four-second breath, never flashing or disappearing completely.
+    static func batteryGlow(at time:Double)->Double {
+        0.44 + 0.10 * (1-cos(2*Double.pi*time/4.8))/2
+    }
+    private var batteryBreathing:Bool {
+        warning == .battery && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+    }
     private var warning: NotchAlert?
     private var charging=false
     private var chargeStarted=ProcessInfo.processInfo.systemUptime
@@ -376,6 +453,7 @@ final class IslandView: NSView {
     func setWarning(_ alert:NotchAlert,animated:Bool=true) {
         set(kind:.brightness,value:0.46,muted:false,animated:animated)
         warning=alert
+        if animated && batteryBreathing {startAnimationTimer()}
     }
 
     func set(kind: LevelKind, value: Float, muted: Bool, animated: Bool = true) {
@@ -406,7 +484,7 @@ final class IslandView: NSView {
     private func startAnimationTimer() {
         if animationTimer == nil {
             lastTick = ProcessInfo.processInfo.systemUptime
-            let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
+            let timer = Timer(timeInterval: batteryBreathing ? 1.0 / 24 : 1.0 / 60, repeats: true) { [weak self] _ in
                 self?.advanceAnimation()
             }
             timer.tolerance = 0.001
@@ -422,7 +500,7 @@ final class IslandView: NSView {
         motion.advance(dt)
         reveal.advance(dt)
         needsDisplay = true
-        if motion.settled && reveal.settled && !(charging && now-chargeStarted<2.8) {
+        if motion.settled && reveal.settled && !(charging && now-chargeStarted<2.8) && !(batteryBreathing && reveal.target > 0) {
             animationTimer?.invalidate()
             animationTimer = nil
             if reveal.target == 0 { onHidden?() }
@@ -497,16 +575,22 @@ final class IslandView: NSView {
                           halfLength: CGFloat, opacity: CGFloat) {
         let scale = window?.backingScaleFactor ?? Geometry.measure().screen.backingScaleFactor
         let pixelsWide = Int(ceil(bounds.width*scale)), pixelsHigh = Int(ceil(bounds.height*scale))
-        guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: pixelsWide,
-            pixelsHigh: pixelsHigh, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
-            isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: pixelsWide*4,
-            bitsPerPixel: 32), let bytes = bitmap.bitmapData else { return }
-        memset(bytes, 0, bitmap.bytesPerRow*pixelsHigh)
+        // Linear floating-point pixels avoid repeated 8-bit alpha quantization.
+        let info = CGBitmapInfo.floatComponents.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            | CGImageAlphaInfo.premultipliedLast.rawValue
+        guard let space=CGColorSpace(name:CGColorSpace.extendedLinearSRGB),
+              let raster=CGContext(data:nil,width:pixelsWide,height:pixelsHigh,bitsPerComponent:32,
+                  bytesPerRow:pixelsWide*16,space:space,bitmapInfo:info),let data=raster.data else{return}
+        memset(data,0,pixelsWide*pixelsHigh*16)
+        let pixels=data.bindMemory(to:Float.self,capacity:pixelsWide*pixelsHigh*4)
         let half = Double(width/2), h = Double(height), radius = 11.0, ear = 10.0
         let extent = Double(halfLength)
         let first = max(0, Int((center-halfLength-1)*scale))
         let last = min(pixelsWide-1, Int((center+halfLength+1)*scale))
         guard last >= first else { return }
+        if window?.isVisible == true {HaloBackdrop.shared.refresh()}
+        let batteryOpacity = warning == .battery
+            ? (batteryBreathing ? Self.batteryGlow(at:ProcessInfo.processInfo.systemUptime) : 0.49) : 1.0
         for px in first...last {
             let signedX=(Double(px)+0.5)/Double(scale)-Double(center)
             let x=abs(signedX)
@@ -533,23 +617,24 @@ final class IslandView: NSView {
                     d = min(d,hypot(x-max(half+ear,x),y))
                 }
                 if d > 28 { continue }
-                let alpha = 0.52*exp(-d*d/(2*8.5*8.5))*envelope*Double(opacity)*pulse
+                let backdrop=HaloBackdrop.shared.brightness(x:(Double(px)+0.5)/Double(pixelsWide),y:(Double(py)+0.5)/Double(pixelsHigh))
+                let contrastGain=HaloBackdrop.gain(backdrop)
+                let alpha = min(0.85,0.52*contrastGain*exp(-d*d/(2*8.5*8.5))*envelope*Double(opacity)*pulse*batteryOpacity)
                 let fringe = min(0.65,d/35)
                 let warm = kind == .brightness
                 let inner = charging ? (0.22,1.0,0.50) : (warning != nil ? (1.0,0.25,0.29) : (warm ? (1.0,0.79,0.56) : (0.55,0.79,1.0)))
                 let outer = charging ? (0.03,0.72,0.25) : (warning != nil ? (0.94,0.05,0.16) : (warm ? (0.94,0.45,0.48) : (0.40,0.47,0.98)))
-                let index = py*bitmap.bytesPerRow+px*4
-                bytes[index] = UInt8(max(0,min(255,((inner.0*(1-fringe)+outer.0*fringe)*alpha*255).rounded())))
-                bytes[index+1] = UInt8(max(0,min(255,((inner.1*(1-fringe)+outer.1*fringe)*alpha*255).rounded())))
-                bytes[index+2] = UInt8(max(0,min(255,((inner.2*(1-fringe)+outer.2*fringe)*alpha*255).rounded())))
-                bytes[index+3] = UInt8(max(0,min(255,(alpha*255).rounded())))
+                let index = (py*pixelsWide+px)*4
+                pixels[index] = Float((inner.0*(1-fringe)+outer.0*fringe)*alpha)
+                pixels[index+1] = Float((inner.1*(1-fringe)+outer.1*fringe)*alpha)
+                pixels[index+2] = Float((inner.2*(1-fringe)+outer.2*fringe)*alpha)
+                pixels[index+3] = Float(alpha)
             }
         }
-        bitmap.size = bounds.size
-        let image = NSImage(size: bounds.size)
-        image.addRepresentation(bitmap)
-        image.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 1,
-                   respectFlipped: true, hints: nil)
+        guard let cgImage=raster.makeImage() else{return}
+        let image=NSImage(cgImage:cgImage,size:bounds.size)
+        image.draw(in:bounds,from:.zero,operation:.sourceOver,fraction:1,
+                   respectFlipped:true,hints:nil)
     }
 
     private func drawContent(center: CGFloat, notchWidth: CGFloat, height: CGFloat, opacity: CGFloat) {

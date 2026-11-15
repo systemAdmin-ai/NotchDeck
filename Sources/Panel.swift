@@ -242,6 +242,17 @@ final class DeckController {
             if self.model.expanded { self.applySize() }
         }
 
+        NotificationCenter.default.addObserver(forName:ProfileStore.didChange,object:nil,queue:.main) {[weak self] note in
+            guard let self else{return}
+            if note.userInfo?["selection"] as? Bool == true {self.model.exitEdit();self.content.applyAppearance();self.relayoutIfExpanded()}
+        }
+        NotificationCenter.default.addObserver(forName:.init("NotchDeck.profileMenuClosed"),object:nil,queue:.main) {[weak self] _ in
+            DispatchQueue.main.asyncAfter(deadline:.now()+2.1) {[weak self] in self?.scheduleCollapse()}
+        }
+        NotificationCenter.default.addObserver(forName:.init("NotchDeck.profilePreview"),object:nil,queue:.main) {[weak self] _ in
+            self?.expand()
+            DispatchQueue.main.asyncAfter(deadline:.now()+2.1) {[weak self] in self?.scheduleCollapse()}
+        }
         NotificationCenter.default.addObserver(forName:.init("NotchDeck.openSettings"),object:nil,queue:.main) { [weak self] _ in self?.showSettings() }
         NotificationCenter.default.addObserver(forName:Preferences.didChange,object:nil,queue:.main) { [weak self] _ in
             guard let self else{return}
@@ -270,37 +281,38 @@ final class DeckController {
 
         // Explicit bounded recording test, invoked only when verifying capture.
         let captureDNC=DistributedNotificationCenter.default()
-        captureDNC.addObserver(forName:.init("com.notchdeck.app.record-test"),object:nil,queue:.main) {_ in _ = Capture.startRecording(seconds:8,test:true)}
-        captureDNC.addObserver(forName:.init("com.notchdeck.app.record-options"),object:nil,queue:.main) {_ in _ = Capture.toggleRecording()}
-        captureDNC.addObserver(forName:.init("com.notchdeck.app.record-status"),object:nil,queue:.main) {_ in Dbg.log("RECORD STATUS active=\(Capture.isRecording) started=\(Capture.recordingStarted != nil) elapsed=\(Capture.elapsedText) file=\(Capture.recordingURL?.path ?? "-")")}
-        captureDNC.addObserver(forName:.init("com.notchdeck.app.record-stop"),object:nil,queue:.main) {_ in Capture.stopRecording()}
+        captureDNC.addObserver(forName:AppIdentity.notification("record-test"),object:nil,queue:.main) {_ in _ = Capture.startRecording(seconds:8,test:true)}
+        captureDNC.addObserver(forName:AppIdentity.notification("record-options"),object:nil,queue:.main) {_ in _ = Capture.toggleRecording()}
+        captureDNC.addObserver(forName:AppIdentity.notification("record-status"),object:nil,queue:.main) {_ in Dbg.log("RECORD STATUS active=\(Capture.isRecording) started=\(Capture.recordingStarted != nil) elapsed=\(Capture.elapsedText) file=\(Capture.recordingURL?.path ?? "-")")}
+        captureDNC.addObserver(forName:AppIdentity.notification("record-stop"),object:nil,queue:.main) {_ in Capture.stopRecording()}
         // внешние триггеры для проверок
         let dnc = DistributedNotificationCenter.default()
-        dnc.addObserver(forName:.init("com.notchdeck.app.charge-test"),object:nil,queue:.main) {_ in NotchHUD.shared.showCharging()}
+        dnc.addObserver(forName:AppIdentity.notification("profiles"),object:nil,queue:.main) {_ in ProfileManager.shared.show()}
+        dnc.addObserver(forName:AppIdentity.notification("charge-test"),object:nil,queue:.main) {_ in NotchHUD.shared.showCharging()}
         NotificationCenter.default.addObserver(forName:.init("NotchDeck.chargeTest"),object:nil,queue:.main) {_ in NotchHUD.shared.showCharging()}
-        dnc.addObserver(forName:.init("com.notchdeck.app.permissions"),object:nil,queue:.main) {_ in
+        dnc.addObserver(forName:AppIdentity.notification("permissions"),object:nil,queue:.main) {_ in
             Dbg.log("PERMISSIONS screen=\(CGPreflightScreenCaptureAccess()) AX=\(AXIsProcessTrusted()) microphoneRequested=false")
         }
-        dnc.addObserver(forName:.init("com.notchdeck.app.notes"),object:nil,queue:.main) {_ in QuickNotes.shared.show()}
-        dnc.addObserver(forName:.init("com.notchdeck.app.demo"),object:nil,queue:.main) { [weak self] _ in self?.runQuickDemo() }
-        dnc.addObserver(forName:.init("com.notchdeck.app.settings"),object:nil,queue:.main) { [weak self] _ in self?.showSettings() }
-        dnc.addObserver(forName: .init("com.notchdeck.app.expand"), object: nil, queue: .main) { [weak self] _ in self?.expand() }
-        dnc.addObserver(forName: .init("com.notchdeck.app.collapse"), object: nil, queue: .main) { [weak self] _ in self?.collapse() }
-        dnc.addObserver(forName: .init("com.notchdeck.app.edit"), object: nil, queue: .main) { [weak self] _ in
+        dnc.addObserver(forName:AppIdentity.notification("notes"),object:nil,queue:.main) {_ in QuickNotes.shared.show()}
+        dnc.addObserver(forName:AppIdentity.notification("demo"),object:nil,queue:.main) { [weak self] _ in self?.runQuickDemo() }
+        dnc.addObserver(forName:AppIdentity.notification("settings"),object:nil,queue:.main) { [weak self] _ in self?.showSettings() }
+        dnc.addObserver(forName: AppIdentity.notification("expand"), object: nil, queue: .main) { [weak self] _ in self?.expand() }
+        dnc.addObserver(forName: AppIdentity.notification("collapse"), object: nil, queue: .main) { [weak self] _ in self?.collapse() }
+        dnc.addObserver(forName: AppIdentity.notification("edit"), object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
             self.expand()
             self.enterEdit()
         }
-        dnc.addObserver(forName: .init("com.notchdeck.app.editoff"), object: nil, queue: .main) { [weak self] _ in self?.exitEdit() }
-        dnc.addObserver(forName: .init("com.notchdeck.app.dumplayout"), object: nil, queue: .main) { [weak self] _ in
+        dnc.addObserver(forName: AppIdentity.notification("editoff"), object: nil, queue: .main) { [weak self] _ in self?.exitEdit() }
+        dnc.addObserver(forName: AppIdentity.notification("dumplayout"), object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
             Dbg.log("LAYOUT\n" + self.content.dumpLayout())
         }
-        dnc.addObserver(forName: .init("com.notchdeck.app.hoverin"), object: nil, queue: .main) { [weak self] _ in
+        dnc.addObserver(forName: AppIdentity.notification("hoverin"), object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
             self.evaluateHover(CGPoint(x: self.geometry.notchRect.midX, y: self.geometry.top - 6))
         }
-        dnc.addObserver(forName: .init("com.notchdeck.app.hoverout"), object: nil, queue: .main) { [weak self] _ in
+        dnc.addObserver(forName: AppIdentity.notification("hoverout"), object: nil, queue: .main) { [weak self] _ in
             self?.evaluateHover(CGPoint(x: 200, y: 400))
         }
 
@@ -434,7 +446,7 @@ final class DeckController {
     /// Вызывается только из глобального монитора мыши: tracking-area mouseExited
     /// срабатывает во время анимации раскрытия (окно растёт) и давал мигание.
     func scheduleCollapse() {
-        guard !demoRunning else{return}
+        guard !demoRunning,!ProfileInteraction.active else{return}
         collapseWork?.cancel()
         guard !model.editMode else { return }
         guard !ToolPanels.anyVisible else { return }

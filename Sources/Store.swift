@@ -114,6 +114,14 @@ final class Config {
         order = o
     }
 
+    func reloadFromDefaults() {
+        let known=Set(Item.allCases.map(\.rawValue))
+        hidden=Set(defaults.stringArray(forKey:"NotchDeck.hiddenItems") ?? Self.cleanHiddenItems).intersection(known)
+        var seen=Set<String>()
+        order=(defaults.stringArray(forKey:"NotchDeck.order") ?? []).filter {known.contains($0) && seen.insert($0).inserted}
+        order += Item.allCases.map(\.rawValue).filter {!seen.contains($0)}
+    }
+
     func visible(_ items: [Item]) -> [Item] {
         items.filter { !hidden.contains($0.rawValue) }.sorted { a, b in
             (order.firstIndex(of: a.rawValue) ?? 999) < (order.firstIndex(of: b.rawValue) ?? 999)

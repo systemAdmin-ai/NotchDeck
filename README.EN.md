@@ -2,14 +2,16 @@
 <h1 align="center">NotchDeck</h1>
 <p align="center">A compact control center around your MacBook notch.</p>
 
-**Apple Silicon · macOS 26+ · MIT · Preview 0.1.0**
+**Apple Silicon · macOS 26+ · MIT · Preview 2.0.0**
 
-[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/download/v0.1.0-preview.1/NotchDeck-0.1.0-AppleSilicon.dmg) · [Русский](README.md)
+[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/download/v2.0.0-preview.1/NotchDeck-2.0.0-AppleSilicon.dmg) · [Русский](README.md)
 
 Hover over the notch for system metrics, app shortcuts, quick notes and screen
-recording. Features include five themes, brightness/volume glow, charging animation,
+recording. Features include task profiles, eight themes, brightness/volume glow, charging animation,
 configurable alerts and a compact now-playing view. The interface and onboarding
 are currently in Russian.
+
+Version 2 adds profile duplication/renaming, independent app and button layouts, light/dark/automatic materials, a subtle low-battery pulse, and backdrop-aware neon when screen permission is available. Auto material follows the macOS theme; halo adaptation samples only a narrow strip in memory.
 
 ## Install
 

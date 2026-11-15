@@ -56,7 +56,7 @@ enum Fmt {
 }
 
 private func label(_ text: String, size: CGFloat, weight: NSFont.Weight = .regular,
-                   color: NSColor = .white) -> NSTextField {
+                   color: NSColor = PanelPalette.foreground) -> NSTextField {
     let f = NSTextField(labelWithString: text)
     f.font = NSFont.systemFont(ofSize: size, weight: weight)
     f.textColor = color
@@ -92,6 +92,29 @@ final class FirstMouseButton: NSButton {
     }
 }
 
+enum PanelPalette {
+    static func isLight(_ appearance:NSAppearance)->Bool {
+        switch Preferences.shared.panelStyle {
+        case .light:return true
+        case .auto:return appearance.bestMatch(from:[.aqua,.darkAqua]) == .aqua
+        default:return false
+        }
+    }
+    static func gray(_ white:CGFloat,alpha:CGFloat)->NSColor {
+        NSColor(name:nil) {appearance in
+            NSColor(white:isLight(appearance) ? 1-white:white,alpha:alpha)
+        }
+    }
+    static var foreground:NSColor {gray(1,alpha:1)}
+    static var appearance:NSAppearance? {
+        switch Preferences.shared.panelStyle {
+        case .auto:return nil
+        case .light:return NSAppearance(named:.aqua)
+        default:return NSAppearance(named:.darkAqua)
+        }
+    }
+}
+
 // MARK: - Фон панели
 // Скругление — через CALayer (maskedCorners), а не NSBezierPath: во flipped-вью дуги
 // appendArc рисуются зеркально, и вместо скругления получается диагональный срез.
@@ -108,7 +131,7 @@ final class NotchBackgroundView:NSView {
         layer?.masksToBounds=true
         blur.frame=bounds;blur.autoresizingMask=[.width,.height]
         blur.material = .hudWindow;blur.blendingMode = .behindWindow
-        blur.state = .active;blur.appearance=NSAppearance(named:.darkAqua)
+        blur.state = .active
         addSubview(blur)
         tint.startPoint=CGPoint(x:0,y:1);tint.endPoint=CGPoint(x:1,y:0)
         tintHost.frame=bounds;tintHost.autoresizingMask=[.width,.height]
@@ -120,23 +143,31 @@ final class NotchBackgroundView:NSView {
     func applyStyle() {
         guard let layer else{return}
         let style=Preferences.shared.panelStyle
+        appearance=PanelPalette.appearance;blur.appearance=PanelPalette.appearance
+        blur.material = style == .auto || style == .light || style == .dark ? .popover:.hudWindow
         blur.isHidden = style == .graphite || style == .midnight
         layer.backgroundColor = NSColor.clear.cgColor
         layer.borderWidth = style == .neon ? 1.2:0.5
-        layer.borderColor = NSColor(white:1,alpha:0.18).cgColor
+        layer.borderColor = PanelPalette.gray(1,alpha:0.18).cgColor
         switch style {
+        case .auto:
+            tint.colors=[NSColor.clear.cgColor,NSColor.clear.cgColor]
+        case .light:
+            tint.colors=[NSColor(white:1,alpha:0.18).cgColor,NSColor(white:0.96,alpha:0.24).cgColor]
+        case .dark:
+            tint.colors=[NSColor(white:0.08,alpha:0.20).cgColor,NSColor(white:0.02,alpha:0.30).cgColor]
         case .glass:
-            tint.colors=[NSColor(white:0.12,alpha:0.28).cgColor,NSColor(white:0.04,alpha:0.4).cgColor]
+            tint.colors=[PanelPalette.gray(0.12,alpha:0.28).cgColor,PanelPalette.gray(0.04,alpha:0.4).cgColor]
         case .graphite:
-            tint.colors=[NSColor(white:0.17,alpha:0.98).cgColor,NSColor(white:0.10,alpha:0.98).cgColor]
+            tint.colors=[PanelPalette.gray(0.17,alpha:0.98).cgColor,PanelPalette.gray(0.10,alpha:0.98).cgColor]
         case .midnight:
-            tint.colors=[NSColor.black.cgColor,NSColor(white:0.015,alpha:1).cgColor]
-            layer.borderColor=NSColor(white:1,alpha:0.07).cgColor
+            tint.colors=[NSColor.black.cgColor,PanelPalette.gray(0.015,alpha:1).cgColor]
+            layer.borderColor=PanelPalette.gray(1,alpha:0.07).cgColor
         case .aurora:
             tint.colors=[NSColor(srgbRed:0.12,green:0.25,blue:0.48,alpha:0.60).cgColor,
                          NSColor(srgbRed:0.25,green:0.12,blue:0.40,alpha:0.65).cgColor]
         case .neon:
-            tint.colors=[NSColor(white:0.03,alpha:0.80).cgColor,NSColor(srgbRed:0.03,green:0.13,blue:0.15,alpha:0.85).cgColor]
+            tint.colors=[PanelPalette.gray(0.03,alpha:0.80).cgColor,NSColor(srgbRed:0.03,green:0.13,blue:0.15,alpha:0.85).cgColor]
             layer.borderColor=NSColor(srgbRed:0.30,green:0.94,blue:0.85,alpha:0.8).cgColor
         }
         needsLayout=true
@@ -209,16 +240,16 @@ final class TileView: PressableView {
 
     init(item: Item) {
         self.item = item
-        icon = symbol(item.symbol, size: 9, color: NSColor(white: 0.72, alpha: 1))
-        titleLabel = label(item.title, size: 8.5, weight: .medium, color: NSColor(white: 0.80, alpha: 1))
-        subLabel = label("", size: 8, color: NSColor(white: 0.58, alpha: 1))
-        valueLabel = label("—", size: 13, weight: .semibold, color: NSColor(white: 0.96, alpha: 1))
+        icon = symbol(item.symbol, size: 9, color: PanelPalette.gray(0.72,alpha:1))
+        titleLabel = label(item.title, size: 8.5, weight: .medium, color: PanelPalette.gray(0.80,alpha:1))
+        subLabel = label("", size: 8, color: PanelPalette.gray(0.58,alpha:1))
+        valueLabel = label("—", size: 13, weight: .semibold, color: PanelPalette.gray(0.96,alpha:1))
         valueLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
         badge = symbol("minus.circle.fill", size: 12, color: .systemRed)
         super.init(frame: NSRect(x: 0, y: 0, width: L.tileW, height: L.tileH))
         wantsLayer = true
         layer?.cornerRadius = 10
-        layer?.backgroundColor = NSColor(white: 1, alpha: 0.07).cgColor
+        layer?.backgroundColor = PanelPalette.gray(1,alpha:0.07).cgColor
         addSubview(icon)
         addSubview(titleLabel)
         addSubview(subLabel)
@@ -247,16 +278,17 @@ final class TileView: PressableView {
 
     private func applyAccent(_ color: NSColor?) {
         currentAccent = color
-        if let c = color {
+        if let color {
+            let c = PanelPalette.isLight(effectiveAppearance) ? (color.blended(withFraction:0.55,of:.black) ?? color):color
             icon.contentTintColor = c.withAlphaComponent(0.95)
             titleLabel.textColor = c
             valueLabel.textColor = c
             subLabel.textColor = c.withAlphaComponent(0.62)
         } else {
-            icon.contentTintColor = NSColor(white: 0.72, alpha: 1)
-            titleLabel.textColor = NSColor(white: 0.80, alpha: 1)
-            valueLabel.textColor = NSColor(white: 0.96, alpha: 1)
-            subLabel.textColor = NSColor(white: 0.58, alpha: 1)
+            icon.contentTintColor = PanelPalette.gray(0.72,alpha:1)
+            titleLabel.textColor = PanelPalette.gray(0.80,alpha:1)
+            valueLabel.textColor = PanelPalette.gray(0.96,alpha:1)
+            subLabel.textColor = PanelPalette.gray(0.58,alpha:1)
         }
     }
 
@@ -307,16 +339,16 @@ final class TileView: PressableView {
 final class ActionView: PressableView {
     let item: Item
     private let icon: NSImageView
-    private let recordingTime = label("", size: 7, color: .white)
+    private let recordingTime = label("", size: 7, color: PanelPalette.foreground)
     private var recordingObserver: NSObjectProtocol?
 
     init(item: Item) {
         self.item = item
-        icon = symbol(item.symbol, size: 13, color: .white)
+        icon = symbol(item.symbol, size: 13, color: PanelPalette.foreground)
         super.init(frame: NSRect(x: 0, y: 0, width: L.actionW, height: L.actionH))
         wantsLayer = true
         layer?.cornerRadius = 9
-        layer?.backgroundColor = NSColor(white: 1, alpha: 0.09).cgColor
+        layer?.backgroundColor = PanelPalette.gray(1,alpha:0.09).cgColor
         addSubview(icon)
         if item == .record {
             setAccessibilityElement(true);setAccessibilityRole(.button)
@@ -338,13 +370,13 @@ final class ActionView: PressableView {
         guard item == .record else{return}
         let active=Capture.isRecording
         icon.image=NSImage(systemSymbolName:active ? "stop.fill":"record.circle",accessibilityDescription:active ? "Остановить запись":"Начать запись")
-        icon.contentTintColor=active ? .systemRed:.white
+        icon.contentTintColor=active ? .systemRed:PanelPalette.foreground
         recordingTime.isHidden = !active
         recordingTime.stringValue=Capture.stopping ? "Стоп…":(Capture.recordingStarted == nil ? "Пуск…":Capture.elapsedText)
         toolTip=active ? (Capture.recordingStarted == nil ? "Подготовка записи · нажми, чтобы отменить":"Идёт запись экрана · \(Capture.elapsedText) · нажми, чтобы остановить"):"Запись экрана · выбрать микрофон и звук"
         setAccessibilityLabel(toolTip)
         setAccessibilityValue(active ? recordingTime.stringValue:"Не идёт")
-        layer?.backgroundColor=active ? NSColor.systemRed.withAlphaComponent(0.22).cgColor:NSColor(white:1,alpha:0.09).cgColor
+        layer?.backgroundColor=active ? NSColor.systemRed.withAlphaComponent(0.22).cgColor:PanelPalette.gray(1,alpha:0.09).cgColor
         needsLayout=true
     }
 
@@ -373,7 +405,7 @@ final class AppView: PressableView {
         super.init(frame: NSRect(x: 0, y: 0, width: L.appW, height: L.appH))
         wantsLayer = true
         layer?.cornerRadius = 9
-        layer?.backgroundColor = NSColor(white: 1, alpha: 0.09).cgColor
+        layer?.backgroundColor = PanelPalette.gray(1,alpha:0.09).cgColor
         icon.image = Launcher.icon(item: item, size: 24)
         icon.imageScaling = .scaleProportionallyUpOrDown
         toolTip = item.title
@@ -409,7 +441,7 @@ final class MiniButton: PressableView {
     func setSymbol(_ name: String) {
         let cfg = NSImage.SymbolConfiguration(pointSize: 10, weight: .semibold)
         icon.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)?.withSymbolConfiguration(cfg)
-        icon.contentTintColor = NSColor(white: 0.95, alpha: 1)
+        icon.contentTintColor = PanelPalette.gray(0.95,alpha:1)
     }
 
     override func layout() {
@@ -427,8 +459,8 @@ final class MediaBarView: NSView {
     var onSeek: ((Double) -> Void)?
 
     private let art = NSImageView()
-    private let titleLabel = label("", size: 11.5, weight: .semibold, color: NSColor(white: 0.96, alpha: 1))
-    private let artistLabel = label("", size: 9, color: NSColor(white: 0.60, alpha: 1))
+    private let titleLabel = label("", size: 11.5, weight: .semibold, color: PanelPalette.gray(0.96,alpha:1))
+    private let artistLabel = label("", size: 9, color: PanelPalette.gray(0.60,alpha:1))
     private let track = NSView()
     private let fill = NSView()
     private let prevBtn = MiniButton(symbol: "backward.fill")
@@ -440,7 +472,7 @@ final class MediaBarView: NSView {
         super.init(frame: NSRect(x: 0, y: 0, width: 432, height: L.mediaH))
         wantsLayer = true
         layer?.cornerRadius = 10
-        layer?.backgroundColor = NSColor(white: 1, alpha: 0.07).cgColor
+        layer?.backgroundColor = PanelPalette.gray(1,alpha:0.07).cgColor
         art.imageScaling = .scaleProportionallyUpOrDown
         art.wantsLayer = true
         art.layer?.cornerRadius = 5
@@ -450,10 +482,10 @@ final class MediaBarView: NSView {
         addSubview(artistLabel)
         track.wantsLayer = true
         track.layer?.cornerRadius = 1
-        track.layer?.backgroundColor = NSColor(white: 1, alpha: 0.14).cgColor
+        track.layer?.backgroundColor = PanelPalette.gray(1,alpha:0.14).cgColor
         fill.wantsLayer = true
         fill.layer?.cornerRadius = 1
-        fill.layer?.backgroundColor = NSColor(white: 0.95, alpha: 0.85).cgColor
+        fill.layer?.backgroundColor = PanelPalette.gray(0.95,alpha:0.85).cgColor
         track.addSubview(fill)
         addSubview(track)
         prevBtn.onTap = { [weak self] in self?.onPrev?() }
@@ -466,6 +498,11 @@ final class MediaBarView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    func applyPalette() {
+        layer?.backgroundColor=PanelPalette.gray(1,alpha:0.07).cgColor
+        track.layer?.backgroundColor=PanelPalette.gray(1,alpha:0.14).cgColor
+        fill.layer?.backgroundColor=PanelPalette.gray(0.95,alpha:0.85).cgColor
+    }
     var titleText: String { titleLabel.stringValue }
 
     /// Тап по полосе прогресса — перемотка на долю трека.
@@ -514,6 +551,8 @@ final class PanelContentView: NSView {
     override var isFlipped: Bool { true }
 
     private let bg = NotchBackgroundView()
+    private let profileHeader=ProfileHeaderView(frame:.zero)
+    private let profileRowHeight:CGFloat=34
     private var tiles: [TileView] = []
     private var actions: [ActionView] = []
     private var apps: [AppView] = []
@@ -527,7 +566,7 @@ final class PanelContentView: NSView {
     private var tools: [ActionView] = []
     private let shelf = FlippedView()
     let mediaBar = MediaBarView()
-    private let shelfTitle = label("Скрытые — тапни, чтобы вернуть", size: 9, color: NSColor(white: 0.62, alpha: 1))
+    private let shelfTitle = label("Скрытые — тапни, чтобы вернуть", size: 9, color: PanelPalette.gray(0.62,alpha:1))
     private let doneButton = FirstMouseButton(title: "Готово", target: nil, action: nil)
     private var shelfViews: [NSView] = []
 
@@ -547,10 +586,11 @@ final class PanelContentView: NSView {
         super.init(frame: frame)
         wantsLayer = true
         addSubview(bg)
+        addSubview(profileHeader)
         shelf.isHidden = true
         doneButton.isBordered = false
         doneButton.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
-        doneButton.contentTintColor = NSColor(white: 1, alpha: 0.85)
+        doneButton.contentTintColor = PanelPalette.gray(1,alpha:0.85)
         doneButton.target = self
         doneButton.action = #selector(doneTapped)
         shelf.addSubview(shelfTitle)
@@ -575,7 +615,7 @@ final class PanelContentView: NSView {
         if mediaOnly {return notchHeight+L.mediaH+18}
         // Compute from the destination width, never the collapsed 181pt window.
         // The same cursor is used by layout(), so no empty rows can be reserved.
-        var bottom=notchHeight+2
+        var bottom=notchHeight+2+profileRowHeight
         if !tiles.isEmpty {
             let rows=Int(ceil(Double(tiles.count)/Double(metricColumns)))
             bottom += CGFloat(rows)*L.tileH+CGFloat(rows-1)*L.gap+L.rowGap
@@ -586,7 +626,15 @@ final class PanelContentView: NSView {
         return bottom+12
     }
 
-    func applyAppearance() {bg.applyStyle();needsLayout=true}
+    func applyAppearance() {
+        appearance=PanelPalette.appearance
+        bg.applyStyle();mediaBar.applyPalette();profileHeader.reload();rebuild();needsLayout=true
+    }
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        // Dynamic text colors update automatically; layer colors need rebuilding.
+        DispatchQueue.main.async {[weak self] in self?.bg.applyStyle();self?.mediaBar.applyPalette();self?.rebuild()}
+    }
 
     func rebuild() {
         tiles.forEach { $0.removeFromSuperview() }
@@ -658,7 +706,7 @@ final class PanelContentView: NSView {
             button.isBordered = false
             button.wantsLayer = true
             button.layer?.cornerRadius = 10
-            button.layer?.backgroundColor = NSColor(white:1,alpha:0.09).cgColor
+            button.layer?.backgroundColor = PanelPalette.gray(1,alpha:0.09).cgColor
             button.toolTip = shortcut.name + (FileManager.default.fileExists(atPath:shortcut.path) ? "" : " — приложение перемещено или удалено")
             addSubview(button);customApps.append(button)
         }
@@ -673,7 +721,7 @@ final class PanelContentView: NSView {
                 b.isBordered = true
                 b.bezelStyle = .inline
                 b.font = NSFont.systemFont(ofSize: 9)
-                b.contentTintColor = .white
+                b.contentTintColor = PanelPalette.foreground
                 b.sizeToFit()
                 b.setFrameSize(NSSize(width: max(46, b.frame.width + 12), height: 22))
                 b.frame.origin = NSPoint(x: x, y: 20)
@@ -682,7 +730,7 @@ final class PanelContentView: NSView {
                 shelfViews.append(b)
             }
             if hiddenItems.isEmpty {
-                let none = label("все плитки на месте", size: 9, color: NSColor(white: 0.58, alpha: 1))
+                let none = label("все плитки на месте", size: 9, color: PanelPalette.gray(0.58,alpha:1))
                 none.frame = NSRect(x: 0, y: 24, width: 160, height: 12)
                 shelf.addSubview(none)
                 shelfViews.append(none)
@@ -745,7 +793,9 @@ final class PanelContentView: NSView {
         super.layout()
         bg.frame = bounds
         let tileWidth=(layoutWidth-L.pad*2-CGFloat(metricColumns-1)*L.gap)/CGFloat(metricColumns)
-        var y = notchHeight + 2
+        profileHeader.frame=NSRect(x:L.pad,y:notchHeight+2,width:bounds.width-L.pad*2,height:28)
+        profileHeader.isHidden=mediaOnly
+        var y = notchHeight + 2 + profileRowHeight
         var col = 0
         var rowTop = y
         for t in tiles {
@@ -789,15 +839,15 @@ final class HUDContentView: NSView {
         layer?.cornerRadius = 17
         layer?.backgroundColor = NSColor(srgbRed: 0.05, green: 0.05, blue: 0.06, alpha: 0.96).cgColor
         layer?.borderWidth = 0.5
-        layer?.borderColor = NSColor(white: 1, alpha: 0.08).cgColor
+        layer?.borderColor = PanelPalette.gray(1,alpha:0.08).cgColor
         for v in [track, fill] {
             v.wantsLayer = true
             addSubview(v)
         }
         track.layer?.cornerRadius = 2.5
-        track.layer?.backgroundColor = NSColor(white: 1, alpha: 0.15).cgColor
+        track.layer?.backgroundColor = PanelPalette.gray(1,alpha:0.15).cgColor
         fill.layer?.cornerRadius = 2.5
-        fill.layer?.backgroundColor = NSColor(white: 0.95, alpha: 1).cgColor
+        fill.layer?.backgroundColor = PanelPalette.gray(0.95,alpha:1).cgColor
         addSubview(icon)
         valueLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
         addSubview(valueLabel)
@@ -811,7 +861,7 @@ final class HUDContentView: NSView {
         let cfg = NSImage.SymbolConfiguration(pointSize: 13, weight: .medium)
         icon.image = NSImage(systemSymbolName: muted ? "speaker.slash.fill" : symbolName, accessibilityDescription: nil)?
             .withSymbolConfiguration(cfg)
-        icon.contentTintColor = .white
+        icon.contentTintColor = PanelPalette.foreground
         valueLabel.stringValue = muted ? "выкл" : "\(Int((self.value * 100).rounded()))%"
         needsLayout = true
     }
@@ -821,7 +871,7 @@ final class HUDContentView: NSView {
         icon.frame = NSRect(x: 12, y: 10, width: 18, height: 15)
         track.frame = NSRect(x: 38, y: 14.5, width: 110, height: 5)
         fill.frame = NSRect(x: 38, y: 14.5, width: max(3, 110 * (muted ? 0 : value)), height: 5)
-        fill.layer?.backgroundColor = (muted ? NSColor.gray : NSColor(white: 0.95, alpha: 1)).cgColor
+        fill.layer?.backgroundColor = (muted ? NSColor.gray : PanelPalette.gray(0.95,alpha:1)).cgColor
         valueLabel.frame = NSRect(x: 156, y: 9, width: 42, height: 16)
     }
 }
@@ -901,13 +951,13 @@ final class SignalContentView: NSVisualEffectView {
         wantsLayer = true
         layer?.cornerRadius = 13
         layer?.masksToBounds = true
-        layer?.backgroundColor = NSColor(white: 0.10, alpha: 0.35).cgColor
+        layer?.backgroundColor = PanelPalette.gray(0.10,alpha:0.35).cgColor
         layer?.borderWidth = 1
-        layer?.borderColor = NSColor(white: 1, alpha: 0.14).cgColor
+        layer?.borderColor = PanelPalette.gray(1,alpha:0.14).cgColor
         icon.imageScaling = .scaleProportionallyDown
-        icon.contentTintColor = NSColor(white: 0.95, alpha: 1)
+        icon.contentTintColor = PanelPalette.gray(0.95,alpha:1)
         label.font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
-        label.textColor = NSColor(white: 0.97, alpha: 1)
+        label.textColor = PanelPalette.gray(0.97,alpha:1)
         label.lineBreakMode = .byTruncatingTail
         addSubview(icon)
         addSubview(label)
@@ -951,18 +1001,18 @@ final class LevelWingView: NSView {
         wantsLayer = true
 
         icon.imageScaling = .scaleProportionallyDown
-        icon.contentTintColor = NSColor(white: 0.97, alpha: 1)
+        icon.contentTintColor = PanelPalette.gray(0.97,alpha:1)
 
         pct.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
-        pct.textColor = NSColor(white: 0.98, alpha: 1)
+        pct.textColor = PanelPalette.gray(0.98,alpha:1)
         pct.alignment = .right
 
         track.wantsLayer = true
         track.layer?.cornerRadius = 2
-        track.layer?.backgroundColor = NSColor(white: 1, alpha: 0.20).cgColor
+        track.layer?.backgroundColor = PanelPalette.gray(1,alpha:0.20).cgColor
         fill.wantsLayer = true
         fill.layer?.cornerRadius = 2
-        fill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.95).cgColor
+        fill.layer?.backgroundColor = PanelPalette.gray(1,alpha:0.95).cgColor
 
         addSubview(icon)
         addSubview(pct)
