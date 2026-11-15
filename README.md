@@ -80,7 +80,7 @@
 | ![Предупреждение](docs/screenshots/04-alert-memory.png) | ![Зарядка](docs/screenshots/05-charge-pulse.png) |
 
 <details>
-<summary>Настройки → Дизайн — окно целиком</summary>
+<summary>Настройки → Дизайн — содержимое вкладки</summary>
 
 ![Настройки оформления](docs/screenshots/06-settings-design.png)
 
