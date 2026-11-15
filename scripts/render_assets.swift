@@ -18,12 +18,12 @@ func save(_ view:NSView,_ name:String,background:Bool=false) {
     if !background {
         try! rep.representation(using:.png,properties:[:])!.write(to:dir.appendingPathComponent(name));return
     }
-    let canvas=NSImage(size:view.bounds.size)
+    let canvas=NSImage(size:NSSize(width:760,height:view.bounds.height))
     canvas.lockFocus()
-    NSColor(white:0.94,alpha:1).setFill();NSRect(origin:.zero,size:view.bounds.size).fill()
+    NSColor(white:0.94,alpha:1).setFill();NSRect(origin:.zero,size:canvas.size).fill()
     NSColor(white:0.025,alpha:1).setFill()
-    NSRect(x:0,y:view.bounds.height-32,width:view.bounds.width,height:32).fill()
-    NSImage(cgImage:rep.cgImage!,size:view.bounds.size).draw(in:NSRect(origin:.zero,size:view.bounds.size))
+    NSRect(x:0,y:view.bounds.height-32,width:canvas.size.width,height:32).fill()
+    NSImage(cgImage:rep.cgImage!,size:view.bounds.size).draw(in:NSRect(x:-(view.bounds.width-760)/2,y:0,width:view.bounds.width,height:view.bounds.height))
     canvas.unlockFocus()
     let output=NSBitmapImageRep(data:canvas.tiffRepresentation!)!
     try! output.representation(using:.png,properties:[:])!.write(to:dir.appendingPathComponent(name))
@@ -41,7 +41,7 @@ for id in ["personal","work","video","recording"] {
 }
 _ = ProfileStore.shared.select("personal")
 for (kind,name) in [(LevelKind.brightness,"brightness"),(.volume,"volume")] {
-    let view=IslandView(frame:NSRect(x:0,y:0,width:760,height:72))
+    let view=IslandView(frame:NSRect(x:0,y:0,width:Geometry.measure().screen.frame.width,height:72))
     view.set(kind:kind,value:0.72,muted:false,animated:false)
     save(view,"hud-\(name).png",background:true)
     var level=HUDMotion();level.target=0.72
@@ -53,12 +53,12 @@ for (kind,name) in [(LevelKind.brightness,"brightness"),(.volume,"volume")] {
     }
 }
 for (alert,name) in [(NotchAlert.memory,"memory"),(.battery,"battery")] {
-    let view=IslandView(frame:NSRect(x:0,y:0,width:760,height:72))
+    let view=IslandView(frame:NSRect(x:0,y:0,width:Geometry.measure().screen.frame.width,height:72))
     view.setWarning(alert,animated:false)
     save(view,"alert-\(name).png",background:true)
 }
 for i in 0..<36 {
-    let view=IslandView(frame:NSRect(x:0,y:0,width:760,height:72))
+    let view=IslandView(frame:NSRect(x:0,y:0,width:Geometry.measure().screen.frame.width,height:72))
     view.setChargeRenderPhase(Double(i)/36)
     save(view,String(format:"charge-%03d.png",i),background:true)
 }
@@ -66,4 +66,5 @@ let settings=PreferencesView(frame:NSRect(x:0,y:0,width:620,height:510))
 let settingsWindow=NSWindow(contentRect:settings.bounds,styleMask:.titled,backing:.buffered,defer:false)
 settingsWindow.contentView=settings
 settings.renderTabs(to:dir.appendingPathComponent("settings").path)
+Onboarding.shared.render(to:dir.appendingPathComponent("onboarding").path)
 print("Public demo assets rendered; no personal settings loaded")

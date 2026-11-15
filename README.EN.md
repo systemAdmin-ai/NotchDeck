@@ -25,10 +25,15 @@ Do not disable Gatekeeper or SIP. Permission refresh may be needed after updates
 
 ## Screenshots
 
-"Midnight" theme. This is **an example of a customized panel**: users choose their
-own app shortcuts and metrics. A fresh installation starts with a basic panel.
+These are **version 2.0 component renders with synthetic demo data**. They contain no personal app shortcuts, VPN status or user preferences.
 
 ![Panel at the notch](docs/screenshots/01-panel.png)
+
+![Task profiles](docs/screenshots/profiles-v2.gif)
+
+![Volume glow](docs/screenshots/neon-volume.gif)
+
+![Charging sweep](docs/screenshots/neon-charge.gif)
 
 Brightness and volume indicators replace the system HUD after permission is granted.
 Charging and alerts have their own glow. Close-ups and the brightness animation:
@@ -44,7 +49,7 @@ Charging and alerts have their own glow. Close-ups and the brightness animation:
 <details>
 <summary>Settings → Design — complete window</summary>
 
-![Design settings](docs/screenshots/06-settings-design.jpg)
+![Design settings](docs/screenshots/06-settings-design.png)
 
 </details>
 

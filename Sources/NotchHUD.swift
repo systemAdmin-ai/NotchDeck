@@ -426,7 +426,8 @@ final class IslandView: NSView {
     private var motion = HUDMotion()
     private var reveal = HUDMotion(response: 28)
     var onHidden: (() -> Void)?
-    var revealAmount: Double { reveal.value }
+    // Sample at the current clock time, rather than the last display timer tick.
+    var revealAmount: Double {advanceAnimation();return reveal.value}
     private var lastTick = ProcessInfo.processInfo.systemUptime
     private var animationTimer: Timer?
     private var animationProgress: CGFloat { CGFloat(max(0, min(1, motion.value))) }
