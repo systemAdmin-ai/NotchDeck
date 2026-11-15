@@ -588,7 +588,7 @@ final class IslandView: NSView {
         let first = max(0, Int((center-halfLength-1)*scale))
         let last = min(pixelsWide-1, Int((center+halfLength+1)*scale))
         guard last >= first else { return }
-        if window?.isVisible == true {HaloBackdrop.shared.refresh()}
+        if window?.isVisible == true && motion.settled && reveal.settled {HaloBackdrop.shared.refresh()}
         let batteryOpacity = warning == .battery
             ? (batteryBreathing ? Self.batteryGlow(at:ProcessInfo.processInfo.systemUptime) : 0.49) : 1.0
         for px in first...last {
@@ -607,13 +607,15 @@ final class IslandView: NSView {
                 else {
                     // Nearest point on the right half of the same rounded edge.
                     d = hypot(x-min(x,half-radius),y-h)
-                    let angle = min(Double.pi/2, max(0, atan2(y-(h-radius),x-(half-radius))))
-                    d = min(d, hypot(x-(half-radius+radius*cos(angle)), y-(h-radius+radius*sin(angle))))
+                    let cx=x-(half-radius),cy=y-(h-radius)
+                    let corner = cx >= 0 && cy >= 0 ? abs(hypot(cx,cy)-radius)
+                        : min(hypot(cx,cy-radius),hypot(cx-radius,cy))
+                    d=min(d,corner)
                     d = min(d, hypot(x-half,y-min(h-radius,max(ear,y))))
-                    var shoulder = atan2(y-ear,x-(half+ear))
-                    if shoulder < 0 { shoulder += 2*Double.pi }
-                    shoulder = min(1.5*Double.pi,max(Double.pi,shoulder))
-                    d = min(d,hypot(x-(half+ear+ear*cos(shoulder)),y-(ear+ear*sin(shoulder))))
+                    let sx=x-(half+ear),sy=y-ear
+                    let shoulder = sx <= 0 && sy <= 0 ? abs(hypot(sx,sy)-ear)
+                        : min(hypot(sx+ear,sy),hypot(sx,sy+ear))
+                    d=min(d,shoulder)
                     d = min(d,hypot(x-max(half+ear,x),y))
                 }
                 if d > 28 { continue }
