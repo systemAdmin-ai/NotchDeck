@@ -4,31 +4,12 @@
 
 **Apple Silicon · macOS 26+ · MIT · Preview 0.1.0**
 
-[Download](https://github.com/systemAdmin-ai/NotchDeck/releases) · [Русский](README.md)
+[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/download/v0.1.0-preview.1/NotchDeck-0.1.0-AppleSilicon.dmg) · [Русский](README.md)
 
 Hover over the notch for system metrics, app shortcuts, quick notes and screen
 recording. Features include five themes, brightness/volume glow, charging animation,
 configurable alerts and a compact now-playing view. The interface and onboarding
 are currently in Russian.
-
-## Screenshots
-
-"Midnight" theme on dark wallpaper. The neon glow belongs to the brightness, volume,
-alert and charging indicators that replace the system HUD around the notch.
-
-![Panel at the notch](docs/screenshots/01-panel.png)
-
-Brightness indicator animation:
-
-![Brightness indicator animation](docs/screenshots/neon-brightness.gif)
-
-| Brightness | Volume |
-|---|---|
-| ![Brightness](docs/screenshots/02-hud-brightness.png) | ![Volume](docs/screenshots/03-hud-volume.png) |
-| **Memory alert** | **Charging pulse** |
-| ![Alert](docs/screenshots/04-alert-memory.png) | ![Charging](docs/screenshots/05-charge-pulse.png) |
-| **Settings → Design** | **First launch** |
-| ![Settings](docs/screenshots/06-settings-design.png) | ![Onboarding](docs/screenshots/07-onboarding.png) |
 
 ## Install
 
@@ -39,6 +20,38 @@ This preview is ad-hoc signed, **not Developer ID signed or Apple notarized**.
 macOS may block the first launch. Use the standard Privacy & Security flow only
 if you choose to trust the app; see [Apple's guidance](https://support.apple.com/en-us/102445).
 Do not disable Gatekeeper or SIP. Permission refresh may be needed after updates.
+
+## Screenshots
+
+"Midnight" theme. This is **an example of a customized panel**: users choose their
+own app shortcuts and metrics. A fresh installation starts with a basic panel.
+
+![Panel at the notch](docs/screenshots/01-panel.png)
+
+Brightness and volume indicators replace the system HUD after permission is granted.
+Charging and alerts have their own glow. Close-ups and the brightness animation:
+
+![Brightness indicator animation](docs/screenshots/neon-brightness.gif)
+
+| Brightness | Volume |
+|---|---|
+| ![Brightness](docs/screenshots/02-hud-brightness.png) | ![Volume](docs/screenshots/03-hud-volume.png) |
+| **Memory alert** | **Charging pulse** |
+| ![Alert](docs/screenshots/04-alert-memory.png) | ![Charging](docs/screenshots/05-charge-pulse.png) |
+
+<details>
+<summary>Settings → Design — complete window</summary>
+
+![Design settings](docs/screenshots/06-settings-design.jpg)
+
+</details>
+
+<details>
+<summary>First launch — complete window</summary>
+
+![First-run onboarding](docs/screenshots/07-onboarding.png)
+
+</details>
 
 ## Use
 
