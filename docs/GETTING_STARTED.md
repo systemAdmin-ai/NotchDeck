@@ -1,60 +1,64 @@
-# Первый запуск
+# First launch
 
-После установки наведи курсор на верхний вырез экрана. Для открытия панели
-также есть значок NotchDeck в строке меню. Короткий онбординг появляется до
-первого завершения и доступен повторно из меню приложения.
+After installing, hover the cutout at the top of the screen. The NotchDeck icon in
+the menu bar opens the panel too. A short onboarding appears until you finish it
+once and can be replayed from the app menu.
 
-## Разрешения
+## Permissions
 
-| Возможность | Доступ | Как включить |
+| Feature | Access | How to enable |
 |---|---|---|
-| Панель, показатели, ярлыки | Без дополнительных разрешений | Работает сразу |
-| Замена системного индикатора клавиш | Универсальный доступ; на macOS 27 — «Управление устройством и доступ к данным» | Системные настройки → Конфиденциальность и безопасность → соответствующий раздел → NotchDeck |
-| Снимки и запись экрана, системный звук | Запись экрана и системного звука | Там же → Запись экрана и системного звука → NotchDeck |
-| Адаптация неона к фону | Запись экрана и системного звука | Использует уже выданный доступ; без него свечение работает без анализа фона |
-| Голос в записи | Микрофон | Выбрать микрофон перед записью и разрешить системный запрос |
-| Управление отдельными плеерами | Автоматизация, если macOS запросит | Подтвердить доступ только к нужному плееру |
+| Panel, metrics, shortcuts | No extra permission | Works immediately |
+| Replacing the system brightness/volume HUD | Accessibility; on macOS 27 — "Device management and data access" | System Settings → Privacy & Security → the matching section → NotchDeck |
+| Screenshots, screen recording, system audio | Screen & System Audio Recording | Same place → Screen & System Audio Recording → NotchDeck |
+| Glow adapting to the background | Screen & System Audio Recording | Reuses access already granted; without it the glow runs without sampling |
+| Voice in recordings | Microphone | Pick a microphone before recording and allow the system prompt |
+| Controlling individual players | Automation, if macOS asks | Approve access to that player only |
 
-Клавиатурный доступ macOS является широким разрешением. NotchDeck использует
-его для обработки клавиш яркости и звука. Онбординг не включает разрешения
-автоматически. Не выдавай доступ, если эта возможность тебе не нужна.
+macOS keyboard access is a broad permission. NotchDeck uses it to handle the
+brightness and volume keys. Onboarding never grants permissions for you. Do not
+grant access if you do not need the feature.
 
-Если macOS попросит перезапустить приложение после разрешения — перезапусти.
-После обновления ad-hoc сборки старая запись разрешения иногда становится
-неактуальной. Удали именно NotchDeck из соответствующего списка, добавь актуальную
-копию из Applications и перезапусти её. Остальные приложения трогать не нужно.
+If macOS asks you to relaunch the app after a permission change — relaunch it.
+After updating an ad-hoc build the old permission entry can go stale. Remove
+exactly NotchDeck from that list, add the current copy from Applications and
+relaunch it. Other apps are not affected.
 
-## Запись
+## Recording
 
-Открой чёлку, нажми значок записи. Выбери весь основной экран или область,
-системный звук и вариант «Без микрофона» / «Микрофон — системный вход».
-Сам вход можно изменить в системных настройках звука. При выборе области выдели
-её перетаскиванием; Esc отменяет выбор. Затем идёт запись: красная кнопка
-показывает время, повторное нажатие останавливает и сохраняет файл.
+Open the notch and press the record button. Choose the whole main display or a
+region, system audio, and "No microphone" / "Microphone — system input". The
+input device itself is changed in the system sound settings. For a region, drag
+to select it; Esc cancels the selection. Recording then starts: the red button
+shows elapsed time, pressing it again stops and saves the file.
 
-Файлы находятся в `~/Desktop/Screenshots`. Часы считают время после запуска
-захвата и могут немного отличаться от длительности файла из-за старта кодировщика.
+Files land in `~/Desktop/Screenshots`. The timer counts from capture start and
+can differ slightly from the file duration because of encoder startup.
 
-## Настройка и удаление
+## Setup and removal
 
-Приложения добавляются вручную в настройках. Предустановленного личного набора нет.
-Буфер обмена выключен по умолчанию; его можно включить в разделе «Поведение»,
-а кнопку — в разделе «Кнопки». Данные истории хранятся только до выхода.
+Apps are added by hand in Settings. There is no preinstalled personal set.
+Clipboard history is off by default; enable it in "Behavior" and its button in
+"Buttons". History lives in memory until you quit.
 
-Для удаления заверши NotchDeck через его меню, выключи автозапуск (если включал),
-затем перенеси приложение из Applications в корзину. Записи и заметки не удаляются
-вместе с приложением. Настройки и заметки хранятся в пользовательском домене
-UserDefaults `com.notchdeck.app`; это отдельные локальные данные.
+To remove NotchDeck, quit it from its own menu, turn off launch at login (if you
+enabled it), then move the app from Applications to the Trash. Recordings and
+notes are not deleted with the app. Settings and notes live in the user
+UserDefaults domain `com.notchdeck.app`; that is separate local data.
 
-## Профили и оформление
+## Profiles and appearance
 
-В верхней строке раскрытой чёлки выбери «Мой профиль», «Работа», «Видео» или «Запись».
-Кнопка «…» открывает управление: копирование, переименование и удаление.
-Изменения приложений, кнопок, порядка и дизайна сохраняются в активном профиле.
-Разрешения и параметры микрофона остаются общими. Переключение не запускает запись.
+In the top row of the expanded notch pick "My profile", "Work", "Video" or
+"Recording". The "…" button opens duplication, renaming and deletion. App,
+button, order and design changes are saved into the active profile. Permissions
+and microphone settings stay global. Switching profiles never starts a recording.
 
-В «Настройки → Дизайн» доступны «Авто», «Светлый» и «Тёмный» вместе с прежними стилями.
-«Авто» следует теме macOS; яркость неонового ореола подстраивается отдельно по фону.
-При включённом уменьшении движения macOS пульсация низкого заряда отключается.
+"Settings → Design" offers "Auto", "Light" and "Dark" alongside the earlier
+styles. "Auto" follows the macOS theme; the neon halo brightness is adapted
+separately from the background. With macOS Reduce Motion on, the low-battery
+pulse is disabled.
 
-Для замены системного HUD включи «Настройки → Поведение → Заменять системный индикатор яркости и громкости» и выдай клавиатурный доступ, указанный выше.
+To replace the system HUD, enable "Settings → Behavior → Replace the system
+brightness and volume indicator" and grant the keyboard access listed above.
+
+Русская версия: [GETTING_STARTED.ru.md](GETTING_STARTED.ru.md)

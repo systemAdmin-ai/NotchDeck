@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Install or permission question
+    url: https://github.com/systemAdmin-ai/NotchDeck/blob/main/docs/GETTING_STARTED.md
+    about: First launch, permissions and recording are covered here

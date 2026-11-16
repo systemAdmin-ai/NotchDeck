@@ -1,154 +1,100 @@
-<p align="center"><img src="Assets/Logo.png" width="112" alt="NotchDeck icon"></p>
+<p align="center"><img src="Assets/Logo.png" width="112" alt="NotchDeck"></p>
 <h1 align="center">NotchDeck</h1>
-<p align="center">Чёлка MacBook как компактный центр управления.</p>
-<p align="center"><b>macOS 26+ · Apple Silicon · Бесплатно · MIT</b></p>
-<p align="center"><a href="https://github.com/systemAdmin-ai/NotchDeck/releases/download/v2.0.0-preview.2/NotchDeck-2.0.0-AppleSilicon.dmg">Скачать DMG</a> · <a href="docs/GETTING_STARTED.md">Начало работы</a> · <a href="PRIVACY.md">Конфиденциальность</a> · <a href="README.EN.md">English</a></p>
+<p align="center">A compact control center around your MacBook notch.</p>
 
-> **Preview 2.0.0.** Приложение ещё развивается. Сборка проверена на macOS 27,
-> Apple Silicon. Intel и версии macOS ниже 26 не поддерживаются этим релизом.
-> Developer ID и нотариализации Apple пока нет — это явно отмечено в инструкции установки.
+**Apple Silicon · macOS 26+ · MIT · Preview 2.0.0**
 
-## Установка
+[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/download/v2.0.0-preview.2/NotchDeck-2.0.0-AppleSilicon.dmg) · [Русский](README.ru.md)
 
-**Быстро, одной командой** (рекомендуется — не будет окна «приложение не проверено»):
+Hover over the notch for system metrics, app shortcuts, quick notes and screen
+recording. Features include task profiles, eight themes, brightness/volume glow, charging animation,
+configurable alerts and a compact now-playing view. The interface is available in
+English and Russian: choose the language on the first onboarding screen or in
+**Settings → General**; the change applies immediately, without relaunching.
+
+Version 2 adds profile duplication/renaming, independent app and button layouts, light/dark/automatic materials, a subtle low-battery pulse, and backdrop-aware neon when screen permission is available. Auto material follows the macOS theme; halo adaptation samples only a narrow strip in memory.
+
+## Install
+
+**One command** (recommended — skips the "app can't be checked" dialog):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scripts/install.sh | bash
 ```
 
-Скрипт скачивает архив, сверяет SHA256 с опубликованным `SHA256SUMS.txt`, распаковывает в `/Applications` и запускает приложение.
+The script downloads the archive, verifies its SHA256 against the published `SHA256SUMS.txt`, unpacks it into `/Applications` and launches the app.
 
-**Вручную через DMG:**
+**Or manually with the DMG:**
 
-1. Открой [Releases](https://github.com/systemAdmin-ai/NotchDeck/releases) и скачай `NotchDeck-2.0.0-AppleSilicon.dmg`.
-2. Открой DMG и перетащи **NotchDeck.app** в **Applications / Программы**.
-3. Запускай приложение из Applications. Пройди короткое знакомство.
-4. При необходимости выдай разрешения, описанные в онбординге. Они не нужны для обычного отображения панели.
+Download the Apple Silicon DMG, open it, and drag NotchDeck into Applications.
+Launch it from Applications and complete the four-step onboarding.
 
-**Важно о подписи.** Preview подписана локальной ad-hoc подписью, без Developer ID
-и нотариализации. macOS может заблокировать первый запуск. Решение о запуске
-принимает сам пользователь через «Конфиденциальность и безопасность»;
-[официальная инструкция Apple](https://support.apple.com/en-us/102445).
-Не нужно отключать Gatekeeper, SIP или выполнять команды удаления карантина.
-После обновления такой сборки macOS может попросить повторно выдать доступ приложению.
+This preview is ad-hoc signed, **not Developer ID signed or Apple notarized**.
+macOS may block the first launch. Use the standard Privacy & Security flow only
+if you choose to trust the app; see [Apple's guidance](https://support.apple.com/en-us/102445).
+Do not disable Gatekeeper or SIP. Permission refresh may be needed after updates.
 
-## Что умеет
+## Screenshots
 
-- Раскрывает компактную панель при наведении на чёлку и сворачивает при уходе курсора.
-- Интерфейс на русском и английском: язык выбирается на первом экране знакомства или в «Настройках → Общие» и применяется сразу.
-- Показывает RAM, батарею, CPU, сеть с КБ/с и МБ/с и другие выбираемые показатели.
-- Заменяет индикатор яркости и громкости мягким неоновым свечением после выдачи доступа к клавишам.
-- Показывает зелёный пробегающий импульс при подключении питания и красные предупреждения по настраиваемым порогам.
-- Открывает компактный плеер при воспроизведении. Обложки зависят от поддержки приложения-плеера.
-- Записывает экран с выбором области, микрофона и системного звука; на красной кнопке виден таймер.
-- Хранит быстрые заметки локально, запускает выбранные пользователем приложения.
-- Сохраняет отдельные профили «Мой профиль», «Работа», «Видео» и «Запись»: приложения, кнопки, показатели и дизайн.
-- Позволяет копировать, переименовывать и удалять профили. Текущая конфигурация сохраняется при обновлении.
-- Предлагает восемь оформлений: Авто, Светлый, Тёмный, Стекло, Графит, Полночь, Сияние и Неон.
-- Мягко пульсирует при низком заряде. Неон усиливается на светлом фоне при наличии доступа к экрану; без него используется базовое свечение.
-- Объясняет первый запуск в четырёх шагах. История буфера и автозапуск выключены до выбора пользователя.
+These are **version 2.0 component renders with synthetic demo data**. They contain no personal app shortcuts, VPN status or user preferences.
 
-## Новое в 2.0
+![Panel at the notch](docs/screenshots/01-panel.png)
 
-[Изменения релиза](docs/RELEASE_2.0.md) · [Профили](docs/V2_PROFILES.md).
+![Task profiles](docs/screenshots/profiles-v2.gif)
 
-Дизайн «Авто» использует стекло и тему macOS. Адаптация **неонового ореола** отдельно анализирует узкую полосу фона при уже выданном доступе к экрану. Кадры не сохраняются.
+![Volume glow](docs/screenshots/neon-volume.gif)
 
-## Скриншоты
+![Charging sweep](docs/screenshots/neon-charge.gif)
 
-Ниже — **рендеры компонентов версии 2.0 с демонстрационными данными**.
-Личных приложений, статусов VPN и пользовательских настроек на них нет.
-На чистой установке пользователь сам выбирает приложения и показатели.
+Brightness and volume indicators replace the system HUD after permission is granted.
+Charging and alerts have their own glow. Close-ups and the brightness animation:
 
-![Панель в чёлке](docs/screenshots/01-panel.png)
+![Brightness indicator animation](docs/screenshots/neon-brightness.gif)
 
-Индикаторы яркости и громкости заменяют системный HUD после выдачи доступа.
-Подключение питания и предупреждения показываются отдельным свечением.
-Ниже — крупные планы индикаторов и анимация яркости:
-
-![Переключение профилей](docs/screenshots/profiles-v2.gif)
-
-| Работа | Видео | Запись |
-|---|---|---|
-| ![Работа](docs/screenshots/08-profile-work.png) | ![Видео](docs/screenshots/09-profile-video.png) | ![Запись](docs/screenshots/10-profile-recording.png) |
-
-**Неон яркости**
-
-![Анимация индикатора яркости](docs/screenshots/neon-brightness.gif)
-
-**Неон громкости**
-
-![Анимация индикатора громкости](docs/screenshots/neon-volume.gif)
-
-**Подключение питания**
-
-![Пробегающий заряд](docs/screenshots/neon-charge.gif)
-
-| Индикатор яркости | Индикатор громкости |
+| Brightness | Volume |
 |---|---|
-| ![Яркость](docs/screenshots/02-hud-brightness.png) | ![Громкость](docs/screenshots/03-hud-volume.png) |
-| **Предупреждение о памяти** | **Импульс при подключении питания** |
-| ![Предупреждение](docs/screenshots/04-alert-memory.png) | ![Зарядка](docs/screenshots/05-charge-pulse.png) |
+| ![Brightness](docs/screenshots/02-hud-brightness.png) | ![Volume](docs/screenshots/03-hud-volume.png) |
+| **Memory alert** | **Charging pulse** |
+| ![Alert](docs/screenshots/04-alert-memory.png) | ![Charging](docs/screenshots/05-charge-pulse.png) |
 
 <details>
-<summary>Настройки → Дизайн — содержимое вкладки</summary>
+<summary>Settings → Design — complete window</summary>
 
-![Настройки оформления](docs/screenshots/06-settings-design.png)
+![Design settings](docs/screenshots/06-settings-design.png)
 
 </details>
 
 <details>
-<summary>Первый запуск — окно целиком</summary>
+<summary>First launch — complete window</summary>
 
-![Знакомство с NotchDeck](docs/screenshots/07-onboarding.png)
+![First-run onboarding](docs/screenshots/07-onboarding.png)
 
 </details>
 
-## Как пользоваться
+## Use
 
-| Действие | Что сделать |
-|---|---|
-| Открыть панель | Навести курсор на чёлку; запасной путь — значок NotchDeck в строке меню |
-| Добавить приложение | Шестерёнка → Приложения → Добавить приложение |
-| Изменить кнопки и дизайн | Шестерёнка → Кнопки / Дизайн |
-| Быстро отредактировать | Долгое нажатие на плитку → скрыть / вернуть → Готово |
-| Записать экран | Запись → выбрать звук и область → Начать; красная кнопка с таймером останавливает |
-| Найти запись | Рабочий стол → Screenshots |
-| Проверить анимации | Меню NotchDeck → Быстрый тест чёлки; тест зарядки — Настройки → Поведение |
-| Повторить онбординг | Меню NotchDeck → Знакомство с NotchDeck |
+- Hover over the notch, or use the menu-bar icon, to open the panel.
+- Use Settings to add your own apps, choose buttons and select a theme.
+- Press Record to choose full screen / region, microphone and system audio.
+  A red stop button shows elapsed time. Recordings go to `~/Desktop/Screenshots`.
+- Clipboard history is opt-in, memory-only, and cleared on exit. Login launch is opt-in.
+- Run the quick demo from the menu. Repeat onboarding from the same menu.
 
-Подробнее: [первый запуск и разрешения](docs/GETTING_STARTED.md).
+No personal presets, notes, logs or recordings ship. No telemetry or cloud sync.
+[Privacy details](PRIVACY.md). Some media features use a private macOS API and may
+change after OS updates. Tested on macOS 27 with Apple Silicon; Intel is unsupported.
 
-## Сборка из исходников
+See [first launch and permissions](docs/GETTING_STARTED.md).
 
-Нужны Mac с Apple Silicon, macOS 26+ и Xcode Command Line Tools с SDK macOS 26+.
+## Build
+
+Install Xcode Command Line Tools with macOS 26+ SDK, clone the repository, and run:
 
 ```bash
-git clone https://github.com/systemAdmin-ai/NotchDeck.git
-cd NotchDeck
 ./build.sh
-open Build/NotchDeck.app
+./scripts/check.sh
+./scripts/package.sh
 ```
 
-Для установки скопируй приложение из `Build` в `Applications`.
-Необходимая сторонняя библиотека включена исходниками; зависимости не скачиваются во время сборки.
-
-```bash
-./scripts/check.sh       # Проверки модели, клавиш и HUD
-./scripts/package.sh     # DMG, ZIP приложения и SHA256SUMS в Dist
-```
-
-## Ограничения
-
-Температура и управление яркостью могут зависеть от модели Mac. Метаданные
-плееров и VPN-статусы зависят от установленных приложений. Для медиа используется
-частный API macOS через mediaremote-adapter; поведение может измениться после
-обновления ОС. Перенос чужих значков из строки меню не выполняется: NotchDeck
-показывает собственные статусы, а системные значки пользователь настраивает в macOS.
-
-## Участие и лицензия
-
-[Сообщить об ошибке](https://github.com/systemAdmin-ai/NotchDeck/issues/new) — укажи
-версию приложения, macOS и шаги воспроизведения. Удаляй личные данные со скриншотов.
-PR приветствуются. Основной код — [MIT](LICENSE); сторонние компоненты —
-[Third-party notices](THIRD_PARTY_NOTICES.md).
+The app is in `Build`, packages in `Dist`. Dependencies are included as source.
+Code is MIT; [third-party licenses](THIRD_PARTY_NOTICES.md) are preserved.

@@ -1,0 +1,60 @@
+name: Bug report
+description: Something in NotchDeck does not work as described
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do not paste personal notes, recordings, file paths or logs.
+        App version, macOS version and steps are enough.
+  - type: input
+    id: app-version
+    attributes:
+      label: NotchDeck version
+      description: Menu bar icon → About, or the DMG filename
+      placeholder: "2.0.0 (210)"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "macOS 26.1 (25B78)"
+    validations:
+      required: true
+  - type: dropdown
+    id: chip
+    attributes:
+      label: Mac
+      options:
+        - MacBook with a notch (Apple Silicon)
+        - MacBook Air/Pro without a notch
+        - Mac mini / iMac / Mac Studio + external display
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the notch panel
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+  - type: checkboxes
+    id: permissions
+    attributes:
+      label: Permissions granted
+      description: Only relevant if the problem involves the brightness/volume glow, screenshots or recording
+      options:
+        - label: Accessibility
+        - label: Screen & System Audio Recording
+        - label: Microphone
+        - label: Not applicable
