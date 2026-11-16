@@ -16,6 +16,16 @@ Version 2 adds profile duplication/renaming, independent app and button layouts,
 
 ## Install
 
+**One command** (recommended — skips the "app can't be checked" dialog):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scripts/install.sh | bash
+```
+
+The script downloads the archive, verifies its SHA256 against the published `SHA256SUMS.txt`, unpacks it into `/Applications` and launches the app.
+
+**Or manually with the DMG:**
+
 Download the Apple Silicon DMG, open it, and drag NotchDeck into Applications.
 Launch it from Applications and complete the four-step onboarding.
 

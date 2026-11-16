@@ -10,6 +10,16 @@
 
 ## Установка
 
+**Быстро, одной командой** (рекомендуется — не будет окна «приложение не проверено»):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scripts/install.sh | bash
+```
+
+Скрипт скачивает архив, сверяет SHA256 с опубликованным `SHA256SUMS.txt`, распаковывает в `/Applications` и запускает приложение.
+
+**Вручную через DMG:**
+
 1. Открой [Releases](https://github.com/systemAdmin-ai/NotchDeck/releases) и скачай `NotchDeck-2.0.0-AppleSilicon.dmg`.
 2. Открой DMG и перетащи **NotchDeck.app** в **Applications / Программы**.
 3. Запускай приложение из Applications. Пройди короткое знакомство.
