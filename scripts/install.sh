@@ -6,19 +6,25 @@
 # Это не отключение защиты и не xattr -d: просто загрузка не через браузер.
 # SHA256 проверяется по опубликованному SHA256SUMS.txt.
 set -euo pipefail
-VERSION="${NOTCHDECK_VERSION:-2.0.0}"
-TAG="${NOTCHDECK_TAG:-v2.0.0-preview.2}"
-BASE="https://github.com/systemAdmin-ai/NotchDeck/releases/download/$TAG"
+VERSION="${NOTCHDECK_VERSION:-2.0.1}"
+TAG="${NOTCHDECK_TAG:-latest}"
+if [ "$TAG" = latest ]; then
+  BASE="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download"
+  ZIP_NAME=NotchDeck.zip
+else
+  BASE="https://github.com/systemAdmin-ai/NotchDeck/releases/download/$TAG"
+  ZIP_NAME="NotchDeck-$VERSION-AppleSilicon.zip"
+fi
 TARGET="${NOTCHDECK_TARGET:-/Applications}"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 echo "→ Скачиваю NotchDeck $VERSION ($TAG)"
-curl -fsSL "$BASE/NotchDeck-$VERSION-AppleSilicon.zip" -o "$WORK/app.zip"
+curl -fsSL "$BASE/$ZIP_NAME" -o "$WORK/app.zip"
 curl -fsSL "$BASE/SHA256SUMS.txt" -o "$WORK/sums.txt"
 
 echo "→ Проверяю контрольную сумму"
-expected="$(awk -v n="NotchDeck-$VERSION-AppleSilicon.zip" '$2==n {print $1}' "$WORK/sums.txt")"
+expected="$(awk -v n="$ZIP_NAME" '$2==n {print $1}' "$WORK/sums.txt")"
 actual="$(shasum -a 256 "$WORK/app.zip" | awk '{print $1}')"
 if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
   echo "✗ Не совпало: ожидалось $expected, получено $actual" >&2

@@ -62,3 +62,7 @@ To replace the system HUD, enable "Settings → Behavior → Replace the system
 brightness and volume indicator" and grant the keyboard access listed above.
 
 Русская версия: [GETTING_STARTED.ru.md](GETTING_STARTED.ru.md)
+
+## Quit the app
+
+Use the NotchDeck menu bar icon → **Quit**, or **Settings → General → Quit NotchDeck**. Interface language remains selectable: Auto, Русский, English.

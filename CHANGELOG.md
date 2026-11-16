@@ -1,3 +1,10 @@
+# 2.0.1 · Distribution fixes
+
+- Permanent `NotchDeck.dmg` and `NotchDeck.zip` release assets, with checksum verification and automatic alias publication.
+- Visible **Quit NotchDeck** button in Settings → General, localized in English and Russian.
+- Explicit Finder icon metadata and bundle checks for the embedded 1024px Retina icon.
+- English default GitHub documentation; Auto / Русский / English language selection remains available in the app.
+
 # Changelog
 
 Все заметные изменения NotchDeck. Формат — «версия, дата, что изменилось».

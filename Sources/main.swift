@@ -451,6 +451,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let url=Bundle.main.url(forResource:"AppIcon",withExtension:"icns"),let icon=NSImage(contentsOf:url) {NSApp.applicationIconImage=icon}
         buildStatusItem()
         deck.start()
         Onboarding.shared.onShowPanel = { [weak self] in self?.deck.expand() }
@@ -467,7 +468,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSLog("NotchDeck started pid=\(ProcessInfo.processInfo.processIdentifier) rss=\(Self.rssMB()) MB")
     }
 
-    func applicationWillTerminate(_ notification:Notification) {QuickNotes.shared.save();SystemMediaStream.shared.stop()}
+    func applicationWillTerminate(_ notification:Notification) {Capture.stopRecording();QuickNotes.shared.save();SystemMediaStream.shared.stop()}
 
     private static func rssMB() -> Int {
         var info = mach_task_basic_info()

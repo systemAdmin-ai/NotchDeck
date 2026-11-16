@@ -1,0 +1,35 @@
+name: Stable download filenames
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        required: true
+permissions:
+  contents: write
+jobs:
+  aliases:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - name: Publish permanent DMG and ZIP filenames
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir assets
+          cd assets
+          gh release download "$RELEASE_TAG" --pattern '*-AppleSilicon.dmg' --pattern '*-AppleSilicon.zip' --pattern SHA256SUMS.txt
+          dmg=(NotchDeck-*-AppleSilicon.dmg)
+          zip=(NotchDeck-*-AppleSilicon.zip)
+          test "${#dmg[@]}" -eq 1
+          test "${#zip[@]}" -eq 1
+          cp "${dmg[0]}" NotchDeck.dmg
+          cp "${zip[0]}" NotchDeck.zip
+          sha256sum --check SHA256SUMS.txt
+          sha256sum "${dmg[0]}" "${zip[0]}" NotchDeck.dmg NotchDeck.zip > SHA256SUMS.txt
+          gh release upload "$RELEASE_TAG" NotchDeck.dmg NotchDeck.zip SHA256SUMS.txt --clobber
