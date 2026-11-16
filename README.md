@@ -2,7 +2,7 @@
 <h1 align="center">NotchDeck</h1>
 <p align="center">Чёлка MacBook как компактный центр управления.</p>
 <p align="center"><b>macOS 26+ · Apple Silicon · Бесплатно · MIT</b></p>
-<p align="center"><a href="https://github.com/systemAdmin-ai/NotchDeck/releases/download/v2.0.0-preview.1/NotchDeck-2.0.0-AppleSilicon.dmg">Скачать DMG</a> · <a href="docs/GETTING_STARTED.md">Начало работы</a> · <a href="PRIVACY.md">Конфиденциальность</a> · <a href="README.EN.md">English</a></p>
+<p align="center"><a href="https://github.com/systemAdmin-ai/NotchDeck/releases/download/v2.0.0-preview.2/NotchDeck-2.0.0-AppleSilicon.dmg">Скачать DMG</a> · <a href="docs/GETTING_STARTED.md">Начало работы</a> · <a href="PRIVACY.md">Конфиденциальность</a> · <a href="README.EN.md">English</a></p>
 
 > **Preview 2.0.0.** Приложение ещё развивается. Сборка проверена на macOS 27,
 > Apple Silicon. Intel и версии macOS ниже 26 не поддерживаются этим релизом.
@@ -25,6 +25,7 @@
 ## Что умеет
 
 - Раскрывает компактную панель при наведении на чёлку и сворачивает при уходе курсора.
+- Интерфейс на русском и английском: язык выбирается на первом экране знакомства или в «Настройках → Общие» и применяется сразу.
 - Показывает RAM, батарею, CPU, сеть с КБ/с и МБ/с и другие выбираемые показатели.
 - Заменяет индикатор яркости и громкости мягким неоновым свечением после выдачи доступа к клавишам.
 - Показывает зелёный пробегающий импульс при подключении питания и красные предупреждения по настраиваемым порогам.
