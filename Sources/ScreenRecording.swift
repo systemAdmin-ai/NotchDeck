@@ -24,7 +24,7 @@ final class ScreenRecording {
         p.arguments=args+[url.path]
         p.terminationHandler = { [weak self] proc in DispatchQueue.main.async {
             guard let self else{return}
-            let error:Error?=proc.terminationStatus == 0 ? nil:NSError(domain:"NotchDeck.Recording",code:Int(proc.terminationStatus),userInfo:[NSLocalizedDescriptionKey:"Запись завершилась с кодом \(proc.terminationStatus)"])
+            let error:Error?=proc.terminationStatus == 0 ? nil:NSError(domain:"NotchDeck.Recording",code:Int(proc.terminationStatus),userInfo:[NSLocalizedDescriptionKey:L("Запись завершилась с кодом %d", proc.terminationStatus)])
             self.finish(error)
         }}
         do {
@@ -64,7 +64,7 @@ private final class RecordingSelectionView:NSView {
     override func draw(_ dirtyRect:NSRect) {
         NSColor.black.withAlphaComponent(0.4).setFill();bounds.fill()
         if !selection.isEmpty {NSColor.white.withAlphaComponent(0.12).setFill();selection.fill();NSColor.systemGreen.setStroke();let p=NSBezierPath(rect:selection);p.lineWidth=2;p.stroke()}
-        let text="Выдели область для записи · Esc — отмена"
+        let text=L("Выдели область для записи · Esc — отмена")
         text.draw(at:NSPoint(x:24,y:bounds.height-80),withAttributes:[.font:NSFont.systemFont(ofSize:18,weight:.medium),.foregroundColor:NSColor.white])
     }
 }

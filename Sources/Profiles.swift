@@ -57,14 +57,14 @@ final class ProfileStore {
         let decoded=defaults.data(forKey:"NotchDeck.profiles.v2").flatMap {try? JSONDecoder().decode([DeckProfile].self,from:$0)} ?? []
         var seen=Set<String>()
         profiles=Array(decoded.filter {!$0.id.isEmpty && seen.insert($0.id).inserted}.prefix(32)).map {
-            var p=$0;p.layout=p.layout.normalized();p.name=Self.cleanName(p.name);if p.name.isEmpty {p.name="Профиль"};return p
+            var p=$0;p.layout=p.layout.normalized();p.name=Self.cleanName(p.name);if p.name.isEmpty {p.name=L("Профиль")};return p
         }
         if profiles.isEmpty {
             profiles=[
-                DeckProfile(id:"personal",name:"Мой профиль",symbol:"person.crop.circle",layout:initial),
-                DeckProfile(id:"work",name:"Работа",symbol:"briefcase",layout:.preset(visible:[.ram,.cpu,.battery,.net,.quickNote,.clipboard,.downloads,.preferences],style:.graphite,applications:initial.applications)),
-                DeckProfile(id:"video",name:"Видео",symbol:"play.rectangle",layout:.preset(visible:[.battery,.net,.mediaToggle,.volumeMute,.preferences],style:.midnight)),
-                DeckProfile(id:"recording",name:"Запись",symbol:"record.circle",layout:.preset(visible:[.ram,.cpu,.disk,.battery,.record,.screenshot,.quickNote,.preferences],style:.neon))]
+                DeckProfile(id:"personal",name:L("Мой профиль"),symbol:"person.crop.circle",layout:initial),
+                DeckProfile(id:"work",name:L("Работа"),symbol:"briefcase",layout:.preset(visible:[.ram,.cpu,.battery,.net,.quickNote,.clipboard,.downloads,.preferences],style:.graphite,applications:initial.applications)),
+                DeckProfile(id:"video",name:L("Видео"),symbol:"play.rectangle",layout:.preset(visible:[.battery,.net,.mediaToggle,.volumeMute,.preferences],style:.midnight)),
+                DeckProfile(id:"recording",name:L("Запись"),symbol:"record.circle",layout:.preset(visible:[.ram,.cpu,.disk,.battery,.record,.screenshot,.quickNote,.preferences],style:.neon))]
         }
         let selected=defaults.string(forKey:"NotchDeck.activeProfile.v2") ?? "personal"
         activeID=profiles.contains(where:{$0.id==selected}) ? selected:profiles[0].id
@@ -121,7 +121,7 @@ final class ProfileStore {
     }
     @discardableResult func restoreOriginal()->String? {
         guard let data=defaults.data(forKey:"NotchDeck.profiles.original"),let state=try? JSONDecoder().decode(ProfileLayout.self,from:data) else{return nil}
-        saveCurrent();return create(name:"Исходные настройки",layout:state.normalized())
+        saveCurrent();return create(name:L("Исходные настройки"),layout:state.normalized())
     }
 }
 
@@ -135,7 +135,7 @@ private final class ProfilePopup:NSPopUpButton {override func acceptsFirstMouse(
 
 final class ProfileHeaderView:NSView,NSMenuDelegate {
     override var isFlipped:Bool {true}
-    private let caption=NSTextField(labelWithString:"ПРОФИЛЬ")
+    private let caption=NSTextField(labelWithString:L("ПРОФИЛЬ"))
     private let profilePopup=ProfilePopup(frame:.zero,pullsDown:false)
     private let manage=FirstMouseButton(title:"…",target:nil,action:nil)
     private var observer:NSObjectProtocol?
@@ -143,8 +143,8 @@ final class ProfileHeaderView:NSView,NSMenuDelegate {
         super.init(frame:frame)
         caption.font = .systemFont(ofSize:9,weight:.medium);caption.textColor = PanelPalette.gray(0.65,alpha:1)
         profilePopup.font = .systemFont(ofSize:12,weight:.semibold);profilePopup.isBordered=false;profilePopup.appearance=PanelPalette.appearance
-        profilePopup.target=self;profilePopup.action=#selector(selected);profilePopup.setAccessibilityLabel("Профиль панели")
-        manage.target=self;manage.action=#selector(openManager);manage.isBordered=false;manage.font = .boldSystemFont(ofSize:18);manage.contentTintColor = PanelPalette.foreground;manage.toolTip="Управление профилями"
+        profilePopup.target=self;profilePopup.action=#selector(selected);profilePopup.setAccessibilityLabel(L("Профиль панели"))
+        manage.target=self;manage.action=#selector(openManager);manage.isBordered=false;manage.font = .boldSystemFont(ofSize:18);manage.contentTintColor = PanelPalette.foreground;manage.toolTip=L("Управление профилями")
         addSubview(caption);addSubview(profilePopup);addSubview(manage);reload()
         observer=NotificationCenter.default.addObserver(forName:ProfileStore.didChange,object:nil,queue:.main) {[weak self] _ in self?.reload()}
     }
@@ -183,24 +183,24 @@ final class ProfileManager:NSObject,NSWindowDelegate {
     func show() {
         if window == nil {
             let w=NSWindow(contentRect:NSRect(x:0,y:0,width:500,height:360),styleMask:[.titled,.closable,.miniaturizable],backing:.buffered,defer:false)
-            w.title="Профили NotchDeck · Preview 2";w.isReleasedWhenClosed=false;w.delegate=self;w.center()
+            w.title=L("Профили NotchDeck · Preview 2");w.isReleasedWhenClosed=false;w.delegate=self;w.center()
             let root=FlippedView(frame:NSRect(x:0,y:0,width:500,height:360));w.contentView=root
             func text(_ title:String,_ y:CGFloat,_ height:CGFloat,_ size:CGFloat=13)->NSTextField {
                 let t=NSTextField(wrappingLabelWithString:title);t.frame=NSRect(x:24,y:y,width:452,height:height);t.font = .systemFont(ofSize:size);root.addSubview(t);return t
             }
-            _=text("Панель под текущую задачу",20,28,20)
-            _=text("Выбери профиль — чёлка сразу покажет его приложения, кнопки, показатели и оформление.",58,44)
-            let select=NSPopUpButton(frame:NSRect(x:24,y:112,width:452,height:30),pullsDown:false);select.target=self;select.action=#selector(selected);select.setAccessibilityLabel("Активный профиль");root.addSubview(select);picker=select
+            _=text(L("Панель под текущую задачу"),20,28,20)
+            _=text(L("Выбери профиль — чёлка сразу покажет его приложения, кнопки, показатели и оформление."),58,44)
+            let select=NSPopUpButton(frame:NSRect(x:24,y:112,width:452,height:30),pullsDown:false);select.target=self;select.action=#selector(selected);select.setAccessibilityLabel(L("Активный профиль"));root.addSubview(select);picker=select
             summary=text("",156,52);summary?.textColor = .secondaryLabelColor
             func button(_ title:String,_ x:CGFloat,_ y:CGFloat,_ width:CGFloat,_ action:Selector) {
                 let b=NSButton(title:title,target:self,action:action);b.bezelStyle = .rounded;b.frame=NSRect(x:x,y:y,width:width,height:30);root.addSubview(b)
             }
-            button("Создать копию…",24,218,144,#selector(duplicate))
-            button("Переименовать…",178,218,156,#selector(rename))
-            button("Удалить…",344,218,132,#selector(remove))
-            button("Настроить выбранный профиль…",24,261,290,#selector(settings))
-            button("Вернуть исходный…",322,261,154,#selector(restore))
-            let note=text("Изменения сохраняются автоматически в выбранный профиль. Разрешения, микрофон и история буфера остаются общими.",307,42,11);note.textColor = .secondaryLabelColor
+            button(L("Создать копию…"),24,218,144,#selector(duplicate))
+            button(L("Переименовать…"),178,218,156,#selector(rename))
+            button(L("Удалить…"),344,218,132,#selector(remove))
+            button(L("Настроить выбранный профиль…"),24,261,290,#selector(settings))
+            button(L("Вернуть исходный…"),322,261,154,#selector(restore))
+            let note=text(L("Изменения сохраняются автоматически в выбранный профиль. Разрешения, микрофон и история буфера остаются общими."),307,42,11);note.textColor = .secondaryLabelColor
             window=w
             observer=NotificationCenter.default.addObserver(forName:ProfileStore.didChange,object:nil,queue:.main) {[weak self] _ in self?.reload()}
         }
@@ -212,22 +212,22 @@ final class ProfileManager:NSObject,NSWindowDelegate {
         let store=ProfileStore.shared;picker?.removeAllItems()
         for p in store.profiles {picker?.addItem(withTitle:p.name);picker?.lastItem?.representedObject=p.id;if p.id==store.activeID {picker?.select(picker?.lastItem)}}
         let layout=store.active.layout;let shown=Item.allCases.filter {!layout.hidden.contains($0.rawValue)}
-        summary?.stringValue="Приложения: \(layout.applications.count)  ·  Показатели: \(shown.filter(\.isMetric).count)  ·  Кнопки: \(shown.filter {!$0.isMetric}.count)\nОформление: \(PanelStyle(rawValue:layout.style)?.title ?? "Стекло")"
+        summary?.stringValue=L("Приложения: %d  ·  Показатели: %d  ·  Кнопки: %d\nОформление: %@", layout.applications.count, shown.filter(\.isMetric).count, shown.filter {!$0.isMetric}.count, PanelStyle(rawValue:layout.style)?.title ?? L("Стекло"))
     }
     private func ask(_ title:String,initial:String,action:(String)->Void) {
-        let alert=NSAlert();alert.messageText=title;alert.addButton(withTitle:"Сохранить");alert.addButton(withTitle:"Отмена")
+        let alert=NSAlert();alert.messageText=title;alert.addButton(withTitle:L("Сохранить"));alert.addButton(withTitle:L("Отмена"))
         let field=NSTextField(string:initial);field.frame=NSRect(x:0,y:0,width:300,height:26);alert.accessoryView=field;alert.window.initialFirstResponder=field
         if alert.runModal() == .alertFirstButtonReturn {action(field.stringValue)}
     }
     @objc private func selected() {if let id=picker?.selectedItem?.representedObject as? String {_ = ProfileStore.shared.select(id)}}
-    @objc private func duplicate() {ask("Название нового профиля",initial:ProfileStore.shared.active.name+" — копия") {if ProfileStore.shared.duplicate(name:$0)==nil {Signal.post("Укажи имя · максимум 32 профиля",symbol:"square.stack")}}}
-    @objc private func rename() {ask("Переименовать профиль",initial:ProfileStore.shared.active.name) {_ = ProfileStore.shared.rename(ProfileStore.shared.activeID,to:$0)}}
+    @objc private func duplicate() {ask(L("Название нового профиля"),initial:ProfileStore.shared.active.name+L(" — копия")) {if ProfileStore.shared.duplicate(name:$0)==nil {Signal.post(L("Укажи имя · максимум 32 профиля"),symbol:"square.stack")}}}
+    @objc private func rename() {ask(L("Переименовать профиль"),initial:ProfileStore.shared.active.name) {_ = ProfileStore.shared.rename(ProfileStore.shared.activeID,to:$0)}}
     @objc private func remove() {
-        let store=ProfileStore.shared;guard store.profiles.count>1 else{Signal.post("Нужен хотя бы один профиль",symbol:"square.stack");return}
-        let alert=NSAlert();alert.messageText="Удалить профиль «\(store.active.name)»?";alert.informativeText="Удаляются только настройки этого профиля. Приложения и файлы остаются на Mac.";alert.addButton(withTitle:"Удалить профиль");alert.addButton(withTitle:"Отмена")
+        let store=ProfileStore.shared;guard store.profiles.count>1 else{Signal.post(L("Нужен хотя бы один профиль"),symbol:"square.stack");return}
+        let alert=NSAlert();alert.messageText=L("Удалить профиль «%@»?", store.active.name);alert.informativeText=L("Удаляются только настройки этого профиля. Приложения и файлы остаются на Mac.");alert.addButton(withTitle:L("Удалить профиль"));alert.addButton(withTitle:L("Отмена"))
         if alert.runModal() == .alertFirstButtonReturn {_ = store.remove(store.activeID)}
     }
-    @objc private func restore() {if ProfileStore.shared.restoreOriginal()==nil {Signal.post("Не удалось создать профиль · максимум 32",symbol:"square.stack")}}
+    @objc private func restore() {if ProfileStore.shared.restoreOriginal()==nil {Signal.post(L("Не удалось создать профиль · максимум 32"),symbol:"square.stack")}}
     @objc private func settings() {NotificationCenter.default.post(name:.init("NotchDeck.openSettings"),object:nil)}
     func windowWillClose(_ notification:Notification) {ProfileInteraction.holdUntil=Date().addingTimeInterval(2);NotificationCenter.default.post(name:.init("NotchDeck.profileMenuClosed"),object:nil)}
 }

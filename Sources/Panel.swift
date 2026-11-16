@@ -528,13 +528,13 @@ final class DeckController {
         guard pct >= MemWarn.threshold else { return }
         if let last = lastMemWarn, Date().timeIntervalSince(last) < 600 { return }
         lastMemWarn = Date()
-        Signal.post(String(format: "Память занята на %.0f %%", pct), symbol: "memorychip.fill")
+        Signal.post(String(format: L("Память занята на %.0f %%"), pct), symbol: "memorychip.fill")
     }
 
     /// События для пилюли: зарядка и сеть (смена трека — в readNowPlaying).
     func detectSignals(_ snap: MetricSnapshot) {
         if let lc = lastCharging, lc != snap.charging, snap.battery != nil {
-            Signal.post(snap.charging ? "Зарядка подключена" : "Зарядка отключена",
+            Signal.post(snap.charging ? L("Зарядка подключена") : L("Зарядка отключена"),
                         symbol: snap.charging ? "bolt.fill" : "bolt.slash")
         }
         lastCharging = snap.charging
@@ -542,7 +542,7 @@ final class DeckController {
 
         let netUp = !snap.ip.isEmpty && snap.ip != "—"
         if let ln = lastNetUp, ln != netUp {
-            Signal.post(netUp ? "Сеть активна" : "Сети нет",
+            Signal.post(netUp ? L("Сеть активна") : L("Сети нет"),
                         symbol: netUp ? "wifi" : "wifi.slash")
         }
         lastNetUp = netUp
@@ -611,15 +611,15 @@ final class DeckController {
             let work=DispatchWorkItem(block:action);demoWork.append(work)
             DispatchQueue.main.asyncAfter(deadline:.now()+seconds,execute:work)
         }
-        stage(0) {NotchHUD.shared.setAlert(.memory);Signal.post("Тест 1/4 · RAM заполнена",symbol:"memorychip")}
-        stage(3) {NotchHUD.shared.setAlert(.battery);Signal.post("Тест 2/4 · Низкий заряд",symbol:"battery.0percent")}
-        stage(6) {NotchHUD.shared.setAlert(.cpu);Signal.post("Тест 3/4 · Высокая нагрузка CPU",symbol:"cpu")}
+        stage(0) {NotchHUD.shared.setAlert(.memory);Signal.post(L("Тест 1/4 · RAM заполнена"),symbol:"memorychip")}
+        stage(3) {NotchHUD.shared.setAlert(.battery);Signal.post(L("Тест 2/4 · Низкий заряд"),symbol:"battery.0percent")}
+        stage(6) {NotchHUD.shared.setAlert(.cpu);Signal.post(L("Тест 3/4 · Высокая нагрузка CPU"),symbol:"cpu")}
         stage(9) { [weak self] in
             guard let self else{return};NotchHUD.shared.setAlert(.off)
-            let np=NowPlaying(title:"Демонстрация плеера",artist:"NotchDeck · тест без воспроизведения",duration:180,elapsed:48,playing:true,source:"demo")
+            let np=NowPlaying(title:L("Демонстрация плеера"),artist:L("NotchDeck · тест без воспроизведения"),duration:180,elapsed:48,playing:true,source:"demo")
             self.model.nowPlaying=np;self.content.setMedia(np)
             self.content.mediaOnly=true;self.model.expanded=true;self.resizeForContent()
-            Signal.post("Тест 4/4 · Контент играет",symbol:"play.fill")
+            Signal.post(L("Тест 4/4 · Контент играет"),symbol:"play.fill")
         }
         stage(12) { [weak self] in
             guard let self else{return};self.demoRunning=false
@@ -628,7 +628,7 @@ final class DeckController {
             if wasExpanded {self.content.mediaOnly=wasMediaOnly;self.model.expanded=true;NotchHUD.shared.panelExpanded = !wasMediaOnly;self.resizeForContent();if !wasMediaOnly {self.model.startRefresh()}}
             else {self.updatePlayer(savedPlayer)}
             self.demoWork.removeAll()
-            Signal.post("Тест завершён",symbol:"checkmark.circle")
+            Signal.post(L("Тест завершён"),symbol:"checkmark.circle")
         }
     }
 
@@ -637,7 +637,7 @@ final class DeckController {
         if settingsWindow == nil {
             let w = NSWindow(contentRect:NSRect(x:0,y:0,width:620,height:510),
                              styleMask:[.titled,.closable,.miniaturizable],backing:.buffered,defer:false)
-            w.title="Настройки NotchDeck";w.isReleasedWhenClosed=false;w.center()
+            w.title=L("Настройки NotchDeck");w.isReleasedWhenClosed=false;w.center()
             let view=PreferencesView(frame:NSRect(x:0,y:0,width:620,height:510))
             view.onDemo = { [weak self] in w.orderOut(nil);self?.runQuickDemo() }
             w.contentView=view

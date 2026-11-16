@@ -14,6 +14,24 @@ enum CLI {
             Onboarding.shared.render(to:args.count>2 ? args[2]:"/tmp/notchdeck-onboarding")
         case "--render-charge":
             NotchHUD.renderCharge(to:args.count>2 ? args[2]:"/tmp/notch-charge")
+        case "--l10n-report":
+            print(L10n.shared.report())
+        case "--l10n-switch-test":
+            let previous = L10n.shared.mode
+            let view = PreferencesView(frame: NSRect(x: 0, y: 0, width: 620, height: 510))
+            let window = NSWindow(contentRect: view.bounds, styleMask: [.titled], backing: .buffered, defer: false)
+            window.contentView = view
+            func dump(_ stage: String) {
+                let tabs = (view.subviews.first as? NSTabView)?.tabViewItems.map { $0.label }.joined(separator: " | ") ?? "?"
+                let menu = notchStatusMenu(target: NSObject()).items.map { $0.title }.filter { !$0.isEmpty }
+                print("\(stage): lang=\(L10n.shared.effective.rawValue)")
+                print("  tabs: \(tabs)")
+                print("  menu: \(menu.joined(separator: " | "))")
+            }
+            dump("до")
+            L10n.shared.set(.en); dump("после en")
+            L10n.shared.set(.ru); dump("после ru")
+            L10n.shared.set(previous)
         case "--capture-status":
             print("screenCapture=\(CGPreflightScreenCaptureAccess()) microphoneRequested=false")
         case "--test-r39":
@@ -405,6 +423,28 @@ enum CLI {
     }
 }
 
+/// Меню в строке состояния. Вынесено из AppDelegate, чтобы проверять смену языка
+/// без запуска приложения: см. `--l10n-switch-test`.
+func notchStatusMenu(target: AnyObject) -> NSMenu {
+    let menu = NSMenu()
+    func add(_ title: String, _ action: Selector, _ key: String = "") -> NSMenuItem {
+        let item = menu.addItem(withTitle: title, action: action, keyEquivalent: key)
+        item.target = target
+        return item
+    }
+    _ = add(L("Показать панель"), #selector(AppDelegate.showPanel))
+    _ = add(L("Профили панели…"), #selector(AppDelegate.profiles))
+    _ = add(L("Быстрые заметки"), #selector(AppDelegate.notes))
+    _ = add(L("Быстрый тест чёлки"), #selector(AppDelegate.demo))
+    _ = add(L("Настройки…"), #selector(AppDelegate.openSettings), ",")
+    _ = add(L("Знакомство с NotchDeck…"), #selector(AppDelegate.onboarding))
+    menu.addItem(.separator())
+    _ = add(L("Вернуть все плитки"), #selector(AppDelegate.resetTiles))
+    menu.addItem(.separator())
+    _ = add(L("Выход"), #selector(AppDelegate.quit), "q")
+    return menu
+}
+
 // MARK: - Приложение
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let deck = DeckController()
@@ -419,6 +459,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification,
                                               object: nil, queue: .main) { [weak self] _ in
             self?.deck.refreshGeometry()
+        }
+        // Смена языка: меню в строке состояния собирается заново на месте.
+        NotificationCenter.default.addObserver(forName: L10n.didChange, object: nil, queue: .main) { [weak self] _ in
+            self?.rebuildStatusItem()
         }
         NSLog("NotchDeck started pid=\(ProcessInfo.processInfo.processIdentifier) rss=\(Self.rssMB()) MB")
     }
@@ -436,6 +480,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return kr == KERN_SUCCESS ? Int(info.resident_size / 1_048_576) : -1
     }
 
+    private func rebuildStatusItem() {
+        if let existing = statusItem { NSStatusBar.system.removeStatusItem(existing); statusItem = nil }
+        buildStatusItem()
+    }
+
     private func buildStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = item.button {
@@ -443,29 +492,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             img?.isTemplate = true
             button.image = img
         }
-        let menu = NSMenu()
-        menu.addItem(withTitle: "Показать панель", action: #selector(showPanel), keyEquivalent: "").target = self
-        menu.addItem(withTitle:"Профили панели…",action:#selector(profiles),keyEquivalent:"").target=self
-        menu.addItem(withTitle:"Быстрые заметки",action:#selector(notes),keyEquivalent:"").target=self
-        menu.addItem(withTitle:"Быстрый тест чёлки",action:#selector(demo),keyEquivalent:"").target=self
-        menu.addItem(withTitle: "Настройки…", action: #selector(openSettings), keyEquivalent: ",").target = self
-        menu.addItem(withTitle:"Знакомство с NotchDeck…",action:#selector(onboarding),keyEquivalent:"").target=self
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Вернуть все плитки", action: #selector(resetTiles), keyEquivalent: "").target = self
-        menu.addItem(.separator())
-        menu.addItem(withTitle: "Выход", action: #selector(quit), keyEquivalent: "q").target = self
-        item.menu = menu
+        item.menu = notchStatusMenu(target: self)
         statusItem = item
     }
 
-    @objc private func profiles() {ProfileManager.shared.show()}
-    @objc private func onboarding() {Onboarding.shared.show()}
-    @objc private func showPanel() { deck.expand() }
-    @objc private func notes() {QuickNotes.shared.show()}
-    @objc private func demo() {deck.runQuickDemo()}
-    @objc private func openSettings() { deck.showSettings() }
-    @objc private func resetTiles() { Config.shared.resetAll() }
-    @objc private func quit() { NSApp.terminate(nil) }
+    @objc func profiles() {ProfileManager.shared.show()}
+    @objc func onboarding() {Onboarding.shared.show()}
+    @objc func showPanel() { deck.expand() }
+    @objc func notes() {QuickNotes.shared.show()}
+    @objc func demo() {deck.runQuickDemo()}
+    @objc func openSettings() { deck.showSettings() }
+    @objc func resetTiles() { Config.shared.resetAll() }
+    @objc func quit() { NSApp.terminate(nil) }
 }
 
 let cliArgs = CommandLine.arguments

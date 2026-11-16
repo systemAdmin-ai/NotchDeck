@@ -1,0 +1,300 @@
+/* NotchDeck — English localization.
+   Key = the Russian source string used in code as L("…").
+   Strings with arguments use printf-style placeholders. */
+
+/* ─── Item titles (Store.swift) ─────────────────────────────────────── */
+"Темп." = "Temp";
+"Батарея" = "Battery";
+"Сеть" = "Network";
+"Диск" = "Disk";
+"Заметки" = "Notes";
+"Микрофон записи" = "Rec mic";
+"Звук записи" = "Rec audio";
+"Сон экрана" = "Sleep display";
+"Заблокировать" = "Lock";
+"Пауза / играть" = "Play / pause";
+"Без звука" = "Mute";
+"Загрузки" = "Downloads";
+"Настройки" = "Settings";
+"Буфер" = "Clipboard";
+"Скрин" = "Shot";
+"Запись" = "Record";
+"Полка" = "Shelf";
+
+/* ─── Units and shared statuses ─────────────────────────────────────── */
+"ГБ/с" = "GB/s";
+"МБ/с" = "MB/s";
+"КБ/с" = "KB/s";
+"Б/с" = "B/s";
+"КБ" = "KB";
+"%.0fГ" = "%.0fGB";
+"%.2f ГБ" = "%.2f GB";
+"%.0f МБ" = "%.0f MB";
+"%dд %dч" = "%dd %dh";
+"%dч %@м" = "%dh %@m";
+"%dм" = "%dm";
+"заряд" = "charging";
+"выкл" = "off";
+"вкл" = "on";
+"Жарко" = "Hot";
+"Заряд" = "Battery";
+"Выключен" = "Off";
+"Подключён" = "Connected";
+"Подключение" = "Connecting";
+"Отключение" = "Disconnecting";
+"Нет данных" = "No data";
+"Не настроен" = "Not configured";
+"Не установлен" = "Not installed";
+
+/* ─── Notch panel (Views.swift) ─────────────────────────────────────── */
+"Микрофон записи: %@" = "Rec mic: %@";
+" · переключается перед записью" = " · toggled before recording";
+"Системный звук записи: %@" = "System audio: %@";
+"Остановить запись" = "Stop recording";
+"Начать запись" = "Start recording";
+"Стоп…" = "Stop…";
+"Пуск…" = "Start…";
+"Подготовка записи · нажми, чтобы отменить" = "Preparing · click to cancel";
+"Идёт запись экрана · %@ · нажми, чтобы остановить" = "Recording · %@ · click to stop";
+"Запись экрана · выбрать микрофон и звук" = "Screen recording · choose mic and audio";
+"Не идёт" = "Idle";
+"Обложка недоступна" = "Artwork unavailable";
+"Скрытые — тапни, чтобы вернуть" = "Hidden — click to restore";
+"Готово" = "Done";
+" — приложение перемещено или удалено" = " — app moved or deleted";
+"все плитки на месте" = "all tiles in place";
+"Текущий трафик: ↓ %@ · ↑ %@" = "Traffic: ↓ %@ · ↑ %@";
+"HUD яркости и громкости" = "Brightness and volume HUD";
+"Показывать в скриншотах" = "Show in screenshots";
+"Запускать при входе" = "Launch at login";
+"Вернуть все плитки" = "Restore all tiles";
+"Выход" = "Quit";
+
+/* ─── Notch HUD alerts (Panel.swift, NotchHUD.swift) ────────────────── */
+"Память занята на %.0f %%" = "Memory at %.0f%%";
+"Зарядка подключена" = "Power connected";
+"Зарядка отключена" = "Power disconnected";
+"Сеть активна" = "Network active";
+"Сети нет" = "No network";
+"Тест 1/4 · RAM заполнена" = "Test 1/4 · RAM full";
+"Тест 2/4 · Низкий заряд" = "Test 2/4 · Low battery";
+"Тест 3/4 · Высокая нагрузка CPU" = "Test 3/4 · High CPU load";
+"Демонстрация плеера" = "Player demo";
+"NotchDeck · тест без воспроизведения" = "NotchDeck · demo track";
+"Тест 4/4 · Контент играет" = "Test 4/4 · Playing";
+"Тест завершён" = "Test finished";
+"Настройки NotchDeck" = "NotchDeck Settings";
+
+/* ─── Onboarding ────────────────────────────────────────────────────── */
+"Знакомство с NotchDeck" = "Getting started with NotchDeck";
+"Назад" = "Back";
+"Далее" = "Continue";
+"NOTCHDECK  /  ШАГ %d ИЗ 4" = "NOTCHDECK  /  STEP %d OF 4";
+"Начать пользоваться" = "Start using it";
+"Всё важное — у чёлки" = "Everything important, at the notch";
+"Компактная панель, которая появляется, когда нужна." = "A compact panel that appears when you need it.";
+"01   Наведи курсор на чёлку" = "01   Hover the notch";
+"Показатели, приложения и инструменты раскроются. Уведи курсор — панель свернётся." = "Metrics, apps and tools expand. Move the cursor away and it collapses.";
+"02   Добавь своё" = "02   Make it yours";
+"Шестерёнка → Приложения и Кнопки. Долгое нажатие на плитку открывает режим редактирования." = "Gear icon → Apps and Buttons. Press and hold a tile to enter edit mode.";
+"03   Всё можно пройти позже" = "03   You can revisit this later";
+"Меню NotchDeck в строке меню → «Знакомство с NotchDeck…»." = "NotchDeck menu in the menu bar → “Getting started…”.";
+"Разрешения — по необходимости" = "Permissions, only when needed";
+"Панель и показатели работают без дополнительных разрешений. Их можно выдать позже в системных настройках." = "The panel and metrics work without extra permissions. You can grant them later in System Settings.";
+"Яркость и громкость" = "Brightness and volume";
+"Для замены системного индикатора нужен доступ к управлению устройством / Универсальному доступу. Он позволяет приложению обрабатывать клавиши яркости и звука." = "Replacing the system HUD needs Accessibility access, which lets the app handle the brightness and volume keys.";
+"Настройки доступа к клавишам…" = "Keyboard access settings…";
+"Запись экрана и звук" = "Screen recording and audio";
+"Доступ к экрану нужен только для снимков и записи. Микрофон запрашивается отдельно, когда ты сам включишь его перед записью." = "Screen access is used only for screenshots and recording. The microphone is requested separately, when you enable it before recording.";
+"Настройки записи экрана…" = "Screen recording settings…";
+"Настрой под себя" = "Set it up your way";
+"Чистый старт: без чужих приложений, заметок и истории." = "A clean start: no third-party apps, notes or history.";
+"Оформление" = "Appearance";
+"Включить историю буфера обмена" = "Enable clipboard history";
+"Выключена по умолчанию. Если включить, последние 30 записей хранятся только в памяти до выхода из приложения." = "Off by default. When enabled, the last 30 items live only in memory until the app quits.";
+"Запускать NotchDeck при входе" = "Launch NotchDeck at login";
+"Готово. Попробуем?" = "Ready. Want to try it?";
+"Музыка и видео" = "Music and video";
+"При воспроизведении появляется компактный плеер. Обложка зависит от того, передаёт ли её приложение в macOS." = "A compact player appears during playback. Artwork depends on whether the app shares it with macOS.";
+"Нажми запись → выбери область, микрофон и звук → Начать. Красная кнопка с таймером показывает запись; повторное нажатие останавливает её. Файлы: Рабочий стол → Screenshots." = "Press record → choose an area, microphone and audio → Start. The red button with a timer shows recording; press again to stop. Files: Desktop → Screenshots.";
+"Зарядка и предупреждения" = "Power and alerts";
+"Подключение питания — зелёный импульс. Высокая нагрузка или низкий заряд — красное свечение. Пороги меняются в настройках." = "Plugging in power — a green pulse. High load or low battery — a red glow. Thresholds live in Settings.";
+"Клавиши: %@  ·  Экран: %@" = "Keys: %@  ·  Screen: %@";
+"доступ есть" = "granted";
+"не разрешено" = "not allowed";
+
+/* ─── Settings: appearance styles ───────────────────────────────────── */
+"Авто" = "Auto";
+"Светлый" = "Light";
+"Тёмный" = "Dark";
+"Стекло" = "Glass";
+"Графит" = "Graphite";
+"Полночь" = "Midnight";
+"Сияние" = "Aurora";
+"Неон" = "Neon";
+"Адаптивное стекло macOS: фон просвечивает, а контраст следует светлой или тёмной теме системы." = "macOS adaptive glass: the background shows through, contrast follows the system light or dark theme.";
+"Молочное стекло с тёмными значками и текстом." = "Frosted glass with dark icons and text.";
+"Затемнённое стекло со светлыми значками и текстом." = "Tinted glass with light icons and text.";
+"Размытый фон, лёгкая прозрачность и тонкая светлая кромка." = "Blurred background, light transparency and a thin bright edge.";
+"Матовая тёмная поверхность с мягкими контрастами." = "Matte dark surface with soft contrast.";
+"Глубокий чёрный фон: минимализм без отвлекающих эффектов." = "Deep black background: minimalism without distracting effects.";
+"Стекло с сине-фиолетовым переливом и мягким цветным акцентом." = "Glass with a blue-violet shift and a soft colored accent.";
+"Тёмное стекло и тонкая бирюзовая светящаяся кромка." = "Dark glass with a thin glowing teal edge.";
+
+/* ─── Settings: general (new tab) ───────────────────────────────────── */
+"Общие" = "General";
+"Настройки приложения" = "App settings";
+"Язык интерфейса" = "Interface language";
+"Язык применяется сразу и сохраняется. По умолчанию — язык системы." = "The language applies immediately and is saved. The default is your system language.";
+"Требования: Apple Silicon и macOS 26 или новее." = "Requires Apple Silicon and macOS 26 or later.";
+
+/* ─── Settings: apps ────────────────────────────────────────────────── */
+"Приложения" = "Apps";
+"Приложения в чёлке" = "Apps in the notch";
+"Добавляй приложения, убирай их из панели и меняй порядок. Удаление из списка не удаляет приложение с Mac." = "Add apps, remove them from the panel and change their order. Removing from the list does not delete the app from your Mac.";
+"Добавить приложение…" = "Add app…";
+"Профили панели…" = "Panel profiles…";
+"Убрать" = "Remove";
+"Добавить приложение в NotchDeck" = "Add an app to NotchDeck";
+
+/* ─── Settings: buttons ─────────────────────────────────────────────── */
+"Кнопки" = "Buttons";
+"Кнопки и показатели" = "Buttons and metrics";
+"Выбери, что показывать в развёрнутой панели." = "Choose what the expanded panel shows.";
+"Вернуть все кнопки" = "Restore all buttons";
+
+/* ─── Settings: design ──────────────────────────────────────────────── */
+"Дизайн" = "Design";
+"Оформление панели" = "Panel appearance";
+"Компактная панель (рекомендуется)" = "Compact panel (recommended)";
+"Компактная ширина — 360 pt. Высота всегда подстраивается под содержимое, без пустого пространства снизу." = "Compact width — 360 pt. The height always fits the content, with no empty space at the bottom.";
+"RAM  17,3 ГБ     ·     Батарея  46%" = "RAM  17.3 GB     ·     Battery  46%";
+"Выбранный стиль применяется сразу и сохраняется после перезапуска." = "The selected style applies immediately and persists after relaunch.";
+
+/* ─── Settings: behavior ────────────────────────────────────────────── */
+"Поведение" = "Behavior";
+"Поведение чёлки" = "Notch behavior";
+"Заменять системный индикатор яркости и громкости" = "Replace the system brightness and volume HUD";
+"Автоматически открывать плеер при воспроизведении" = "Open the player automatically during playback";
+"Во время воспроизведения виден компактный плеер. Наведи курсор, чтобы открыть всю панель. После паузы он свернётся через 3 секунды." = "A compact player shows during playback. Hover to open the full panel. After a pause it collapses in 3 seconds.";
+"Показывать чёлку на скриншотах" = "Show the notch in screenshots";
+"История буфера обмена — только в памяти до выхода" = "Clipboard history — in memory only, until quit";
+"Быстрый тест чёлки — 12 секунд" = "Quick notch test — 12 seconds";
+"Тест зарядки" = "Power test";
+"Демо показывает RAM, батарею, CPU и плеер. Настоящая нагрузка, заряд и громкость не меняются." = "The demo shows RAM, battery, CPU and the player. Real load, charge and volume stay unchanged.";
+
+/* ─── Settings: alerts ──────────────────────────────────────────────── */
+"Предупреждения" = "Alerts";
+"Красное свечение" = "Red glow";
+"Оперативная память" = "Memory";
+"Загрузка процессора" = "CPU load";
+"Температура процессора, °C" = "CPU temperature, °C";
+"Низкий заряд батареи, %" = "Low battery, %";
+"CPU: предупреждение после 10 секунд высокой нагрузки. Батарея: только без зарядки. Приоритет: батарея → температура → RAM → CPU. При нормализации свечение гаснет." = "CPU: alert after 10 seconds of high load. Battery: only while unplugged. Priority: battery → temperature → RAM → CPU. The glow fades when values return to normal.";
+"Показать тест предупреждений" = "Show alert test";
+
+/* ─── Processes panel ───────────────────────────────────────────────── */
+"Завершить" = "Quit";
+"Закрыть приложение" = "Quit app";
+"Закрыть все %d процесса приложения" = "Quit all %d app processes";
+"точно?" = "sure?";
+"всё (%d)?" = "all (%d)?";
+" Очистить кэш" = " Clear cache";
+"Освободить кэш памяти (система попросит права администратора)" = "Free the memory cache (macOS will ask for administrator rights)";
+" Очищаем…" = " Clearing…";
+"Кэш очищен · свободно %@" = "Cache cleared · free %@";
+"Завершён %@" = "Quit %@";
+"Не удалось: %@" = "Failed: %@";
+"Закрыто процессов: %d" = "Processes closed: %d";
+" (защищён)" = " (protected)";
+"утилита purge не найдена" = "purge utility not found";
+"Кэш очищен" = "Cache cleared";
+"Отменено" = "Cancelled";
+"Не удалось: нужны права администратора" = "Failed: administrator rights required";
+"Нужны права администратора" = "Administrator rights required";
+
+/* ─── Profiles ──────────────────────────────────────────────────────── */
+"Профиль" = "Profile";
+"Мой профиль" = "My profile";
+"Работа" = "Work";
+"Видео" = "Video";
+"Исходные настройки" = "Default settings";
+"ПРОФИЛЬ" = "PROFILE";
+"Профиль панели" = "Panel profile";
+"Управление профилями" = "Manage profiles";
+"Профили NotchDeck · Preview 2" = "NotchDeck profiles · Preview 2";
+"Панель под текущую задачу" = "A panel for the current task";
+"Выбери профиль — чёлка сразу покажет его приложения, кнопки, показатели и оформление." = "Pick a profile — the notch immediately shows its apps, buttons, metrics and appearance.";
+"Активный профиль" = "Active profile";
+"Создать копию…" = "Duplicate…";
+"Переименовать…" = "Rename…";
+"Удалить…" = "Delete…";
+"Настроить выбранный профиль…" = "Edit the selected profile…";
+"Вернуть исходный…" = "Restore defaults…";
+"Изменения сохраняются автоматически в выбранный профиль. Разрешения, микрофон и история буфера остаются общими." = "Changes are saved to the selected profile automatically. Permissions, microphone and clipboard history stay shared.";
+"Приложения: %d  ·  Показатели: %d  ·  Кнопки: %d\nОформление: %@" = "Apps: %d  ·  Metrics: %d  ·  Buttons: %d\nAppearance: %@";
+"Сохранить" = "Save";
+"Отмена" = "Cancel";
+"Название нового профиля" = "New profile name";
+" — копия" = " copy";
+"Укажи имя · максимум 32 профиля" = "Enter a name · 32 profiles max";
+"Переименовать профиль" = "Rename profile";
+"Нужен хотя бы один профиль" = "At least one profile is required";
+"Удалить профиль «%@»?" = "Delete the profile “%@”?";
+"Удаляются только настройки этого профиля. Приложения и файлы остаются на Mac." = "Only this profile's settings are deleted. Apps and files stay on your Mac.";
+"Удалить профиль" = "Delete profile";
+"Не удалось создать профиль · максимум 32" = "Could not create a profile · 32 max";
+
+/* ─── Screen recording ──────────────────────────────────────────────── */
+"Запись завершилась с кодом %d" = "Recording finished with code %d";
+"Выдели область для записи · Esc — отмена" = "Select the area to record · Esc to cancel";
+"Скриншот сохранён" = "Screenshot saved";
+"Изображение %d×%d" = "Image %d×%d";
+"(пусто)" = "(empty)";
+"Звук меняется перед началом записи" = "Audio can change only before recording starts";
+"Системный звук: включён" = "System audio: on";
+"Системный звук: выключен" = "System audio: off";
+"Микрофон меняется перед началом записи" = "The microphone can change only before recording starts";
+"Доступ к микрофону не разрешён" = "Microphone access not granted";
+"Нет доступа к микрофону" = "No microphone access";
+"Включи доступ NotchDeck в настройках микрофона. Запись без микрофона продолжает работать." = "Enable NotchDeck in Microphone settings. Recording without the microphone keeps working.";
+"Открыть настройки" = "Open Settings";
+"Запись экрана" = "Screen recording";
+"Выбери экран и звук перед началом. Остановить запись можно красной кнопкой в чёлке." = "Choose the screen and audio before you start. Stop recording with the red button in the notch.";
+"Без микрофона" = "No microphone";
+"Микрофон — системный вход" = "Microphone — system input";
+"Основной экран целиком" = "Main display, full";
+"Выбрать область экрана" = "Select an area";
+"Область записи" = "Recording area";
+"Записывать звук приложений" = "Record app audio";
+"Микрофон не разрешён · запись не начата" = "Microphone not allowed · recording not started";
+"Нет доступа к микрофону · выбери запись без микрофона или разреши доступ в настройках" = "No microphone access · record without it or grant access in Settings";
+"Нужен доступ к записи экрана" = "Screen recording access required";
+"Разреши NotchDeck в разделе «Конфиденциальность и безопасность → Запись экрана и системного звука», затем перезапусти приложение." = "Allow NotchDeck in Privacy & Security → Screen & System Audio Recording, then relaunch the app.";
+"Идёт запись экрана" = "Recording in progress";
+"Запись сохранена" = "Recording saved";
+"Не удалось сохранить запись · %@" = "Could not save the recording · %@";
+"пустой файл" = "empty file";
+
+/* ─── Tool panels ───────────────────────────────────────────────────── */
+"Буфер обмена" = "Clipboard";
+"Очистить" = "Clear";
+"Пока пусто — скопируй что-нибудь" = "Nothing yet — copy something";
+"последнее" = "latest";
+"%d-е" = "#%d";
+"Скопировано из истории" = "Copied from history";
+"На полке: %d" = "On the shelf: %d";
+"Полка — перетащи файл сюда" = "Shelf — drop a file here";
+"Пусто. Перетащи файл в это окно." = "Empty. Drop a file into this window.";
+
+/* ─── Quick notes ───────────────────────────────────────────────────── */
+"Быстрые заметки · NotchDeck" = "Quick notes · NotchDeck";
+"Сохраняется автоматически на этом Mac" = "Saved automatically on this Mac";
+"Заметки Apple ↗" = "Apple Notes ↗";
+
+/* ─── Status menu ───────────────────────────────────────────────────── */
+"Показать панель" = "Show panel";
+"Быстрые заметки" = "Quick notes";
+"Быстрый тест чёлки" = "Quick notch test";
+"Настройки…" = "Settings…";
+"Знакомство с NotchDeck…" = "Getting started…";

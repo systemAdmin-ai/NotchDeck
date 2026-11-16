@@ -24,6 +24,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleVersion</key><string>200</string>
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>ru</string></array>
   <key>LSUIElement</key><true/>
   <key>NSAppleEventsUsageDescription</key><string>NotchDeck показывает, что играет, и переключает треки.</string>
   <key>NSMicrophoneUsageDescription</key><string>Микрофон включается только кнопкой микрофона для записи экрана с вашим голосом.</string>
@@ -44,7 +46,7 @@ if [ -n "${APP_NAME:-}" ]; then
 fi
 
 swiftc -target arm64-apple-macos26.0 -swift-version 5 -O -o "$BIN" \
-  Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
+  Sources/L10n.swift Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
   Sources/NowPlaying.swift Sources/Tools.swift Sources/Procs.swift Sources/Keys.swift \
   Sources/ToolPanels.swift Sources/ProcPanel.swift \
   Sources/Profiles.swift Sources/ProfileChecks.swift Sources/Onboarding.swift Sources/ScreenRecording.swift Sources/PowerEvents.swift Sources/Connections.swift Sources/Notes.swift Sources/Checks.swift Sources/Preferences.swift Sources/SystemMedia.swift Sources/HUDMotion.swift Sources/NotchHUD.swift Sources/Cleanup.swift Sources/Views.swift Sources/Panel.swift Sources/main.swift \
@@ -77,6 +79,10 @@ cp "$MRA_SRC/LICENSE" "$APP/Contents/Resources/mediaremote/LICENSE-mediaremote-a
 codesign --force --sign - --timestamp=none "$FW"
 
 cp Assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+# Переводы интерфейса: ключ = русская строка из Sources/*.swift.
+for lproj in Resources/*.lproj; do
+  [ -d "$lproj" ] && cp -R "$lproj" "$APP/Contents/Resources/"
+done
 codesign --force --sign "${SIGN_IDENTITY:--}" --timestamp=none "$APP"
 codesign --verify --deep --strict "$APP"
 echo "BUILD OK: $BIN"

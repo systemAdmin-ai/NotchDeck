@@ -1,7 +1,7 @@
 import AppKit
 
 // MARK: - Метрики раскладки
-enum L {
+enum Layout {
     static let pad: CGFloat = 14
     static let tileW: CGFloat = 100
     static let tileH: CGFloat = 40
@@ -21,10 +21,10 @@ enum Fmt {
     static func speed(_ kb:Double)->String {
         let value=kb.isFinite ? max(0,kb):0
         let amount:Double,unit:String
-        if value>=1_048_576 {amount=value/1_048_576;unit="ГБ/с"}
-        else if value>=1024 {amount=value/1024;unit="МБ/с"}
-        else if value>=1 {amount=value;unit="КБ/с"}
-        else {amount=value*1024;unit="Б/с"}
+        if value>=1_048_576 {amount=value/1_048_576;unit=L("ГБ/с")}
+        else if value>=1024 {amount=value/1024;unit=L("МБ/с")}
+        else if value>=1 {amount=value;unit=L("КБ/с")}
+        else {amount=value*1024;unit=L("Б/с")}
         return String(format:amount>=100 || amount==0 ? "%.0f %@":"%.1f %@",amount,unit)
     }
 
@@ -35,7 +35,7 @@ enum Fmt {
         case .temp: return s.temp.map { String(format: "%.0f°", $0) } ?? "—"
         case .battery: return s.battery.map { "\($0)%" } ?? "—"
         case .net: return s.networkReady ? "↓\(speed(s.down))":"…"
-        case .disk: return String(format: "%.0fГ", s.diskFree)
+        case .disk: return String(format: L("%.0fГ"), s.diskFree)
         case .uptime: return s.uptime
         case .happStatus:return s.happStatus
         case .checkpointStatus:return s.checkpointStatus
@@ -48,7 +48,7 @@ enum Fmt {
         switch item {
         case .ram: return ""
         case .net: return s.networkReady ? "↑\(speed(s.up))":""
-        case .battery: return s.charging ? "заряд" : ""
+        case .battery: return s.charging ? L("заряд") : ""
         case .ip: return s.vpn ? "VPN" : ""
         default: return ""
         }
@@ -246,7 +246,7 @@ final class TileView: PressableView {
         valueLabel = label("—", size: 13, weight: .semibold, color: PanelPalette.gray(0.96,alpha:1))
         valueLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
         badge = symbol("minus.circle.fill", size: 12, color: .systemRed)
-        super.init(frame: NSRect(x: 0, y: 0, width: L.tileW, height: L.tileH))
+        super.init(frame: NSRect(x: 0, y: 0, width: Layout.tileW, height: Layout.tileH))
         wantsLayer = true
         layer?.cornerRadius = 10
         layer?.backgroundColor = PanelPalette.gray(1,alpha:0.07).cgColor
@@ -345,7 +345,7 @@ final class ActionView: PressableView {
     init(item: Item) {
         self.item = item
         icon = symbol(item.symbol, size: 13, color: PanelPalette.foreground)
-        super.init(frame: NSRect(x: 0, y: 0, width: L.actionW, height: L.actionH))
+        super.init(frame: NSRect(x: 0, y: 0, width: Layout.actionW, height: Layout.actionH))
         wantsLayer = true
         layer?.cornerRadius = 9
         layer?.backgroundColor = PanelPalette.gray(1,alpha:0.09).cgColor
@@ -359,8 +359,8 @@ final class ActionView: PressableView {
             updateRecording()
         }
         if item != .record {toolTip=item.title}
-        if item == .recordMic {toolTip="Микрофон записи: \(Capture.microphoneEnabled ? "вкл" : "выкл") · переключается перед записью"}
-        if item == .recordAudio {toolTip="Системный звук записи: \(Capture.systemAudioEnabled ? "вкл" : "выкл") · переключается перед записью"}
+        if item == .recordMic {toolTip=L("Микрофон записи: %@", Capture.microphoneEnabled ? L("вкл") : L("выкл")) + L(" · переключается перед записью")}
+        if item == .recordAudio {toolTip=L("Системный звук записи: %@", Capture.systemAudioEnabled ? L("вкл") : L("выкл")) + L(" · переключается перед записью")}
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -369,13 +369,13 @@ final class ActionView: PressableView {
     func updateRecording() {
         guard item == .record else{return}
         let active=Capture.isRecording
-        icon.image=NSImage(systemSymbolName:active ? "stop.fill":"record.circle",accessibilityDescription:active ? "Остановить запись":"Начать запись")
+        icon.image=NSImage(systemSymbolName:active ? "stop.fill":"record.circle",accessibilityDescription:active ? L("Остановить запись"):L("Начать запись"))
         icon.contentTintColor=active ? .systemRed:PanelPalette.foreground
         recordingTime.isHidden = !active
-        recordingTime.stringValue=Capture.stopping ? "Стоп…":(Capture.recordingStarted == nil ? "Пуск…":Capture.elapsedText)
-        toolTip=active ? (Capture.recordingStarted == nil ? "Подготовка записи · нажми, чтобы отменить":"Идёт запись экрана · \(Capture.elapsedText) · нажми, чтобы остановить"):"Запись экрана · выбрать микрофон и звук"
+        recordingTime.stringValue=Capture.stopping ? L("Стоп…"):(Capture.recordingStarted == nil ? L("Пуск…"):Capture.elapsedText)
+        toolTip=active ? (Capture.recordingStarted == nil ? L("Подготовка записи · нажми, чтобы отменить"):L("Идёт запись экрана · %@ · нажми, чтобы остановить", Capture.elapsedText)):L("Запись экрана · выбрать микрофон и звук")
         setAccessibilityLabel(toolTip)
-        setAccessibilityValue(active ? recordingTime.stringValue:"Не идёт")
+        setAccessibilityValue(active ? recordingTime.stringValue:L("Не идёт"))
         layer?.backgroundColor=active ? NSColor.systemRed.withAlphaComponent(0.22).cgColor:PanelPalette.gray(1,alpha:0.09).cgColor
         needsLayout=true
     }
@@ -402,7 +402,7 @@ final class AppView: PressableView {
 
     init(item: Item) {
         self.item = item
-        super.init(frame: NSRect(x: 0, y: 0, width: L.appW, height: L.appH))
+        super.init(frame: NSRect(x: 0, y: 0, width: Layout.appW, height: Layout.appH))
         wantsLayer = true
         layer?.cornerRadius = 9
         layer?.backgroundColor = PanelPalette.gray(1,alpha:0.09).cgColor
@@ -469,7 +469,7 @@ final class MediaBarView: NSView {
     private var progress: CGFloat = 0
 
     override init(frame: NSRect) {
-        super.init(frame: NSRect(x: 0, y: 0, width: 432, height: L.mediaH))
+        super.init(frame: NSRect(x: 0, y: 0, width: 432, height: Layout.mediaH))
         wantsLayer = true
         layer?.cornerRadius = 10
         layer?.backgroundColor = PanelPalette.gray(1,alpha:0.07).cgColor
@@ -521,7 +521,7 @@ final class MediaBarView: NSView {
            let url=NSWorkspace.shared.urlForApplication(withBundleIdentifier:bundle) {
             art.image=NSWorkspace.shared.icon(forFile:url.path)
         }
-        if art.image == nil {art.image=NSImage(systemSymbolName:"music.note",accessibilityDescription:"Обложка недоступна")}
+        if art.image == nil {art.image=NSImage(systemSymbolName:"music.note",accessibilityDescription:L("Обложка недоступна"))}
         playBtn.setSymbol(np.playing ? "pause.fill" : "play.fill")
         progress = np.progress
         needsLayout = true
@@ -560,14 +560,14 @@ final class PanelContentView: NSView {
     var mediaOnly = false { didSet { needsLayout = true } }
     private var layoutWidth:CGFloat {Preferences.shared.panelWidth}
     private var metricColumns:Int {Preferences.shared.compactPanel ? 3:4}
-    private var shortcutColumns:Int {max(1,Int((layoutWidth-L.pad*2+L.actionGap)/(L.appW+L.actionGap)))}
+    private var shortcutColumns:Int {max(1,Int((layoutWidth-Layout.pad*2+Layout.actionGap)/(Layout.appW+Layout.actionGap)))}
     private var shortcutCount: Int { actions.count+apps.count+tools.count+customApps.count }
     private var shortcutRows: Int { Int(ceil(Double(shortcutCount)/Double(shortcutColumns))) }
     private var tools: [ActionView] = []
     private let shelf = FlippedView()
     let mediaBar = MediaBarView()
-    private let shelfTitle = label("Скрытые — тапни, чтобы вернуть", size: 9, color: PanelPalette.gray(0.62,alpha:1))
-    private let doneButton = FirstMouseButton(title: "Готово", target: nil, action: nil)
+    private let shelfTitle = label(L("Скрытые — тапни, чтобы вернуть"), size: 9, color: PanelPalette.gray(0.62,alpha:1))
+    private let doneButton = FirstMouseButton(title: L("Готово"), target: nil, action: nil)
     private var shelfViews: [NSView] = []
 
     var notchHeight: CGFloat = 32
@@ -612,17 +612,17 @@ final class PanelContentView: NSView {
     }
 
     func contentHeight()->CGFloat {
-        if mediaOnly {return notchHeight+L.mediaH+18}
+        if mediaOnly {return notchHeight+Layout.mediaH+18}
         // Compute from the destination width, never the collapsed 181pt window.
         // The same cursor is used by layout(), so no empty rows can be reserved.
         var bottom=notchHeight+2+profileRowHeight
         if !tiles.isEmpty {
             let rows=Int(ceil(Double(tiles.count)/Double(metricColumns)))
-            bottom += CGFloat(rows)*L.tileH+CGFloat(rows-1)*L.gap+L.rowGap
+            bottom += CGFloat(rows)*Layout.tileH+CGFloat(rows-1)*Layout.gap+Layout.rowGap
         }
-        if !mediaBar.isHidden {bottom += L.mediaH+L.rowGap}
-        if shortcutCount>0 {bottom += CGFloat(shortcutRows)*L.appH+CGFloat(shortcutRows-1)*L.actionGap}
-        if editing {bottom += 8+L.shelfH}
+        if !mediaBar.isHidden {bottom += Layout.mediaH+Layout.rowGap}
+        if shortcutCount>0 {bottom += CGFloat(shortcutRows)*Layout.appH+CGFloat(shortcutRows-1)*Layout.actionGap}
+        if editing {bottom += 8+Layout.shelfH}
         return bottom+12
     }
 
@@ -707,7 +707,7 @@ final class PanelContentView: NSView {
             button.wantsLayer = true
             button.layer?.cornerRadius = 10
             button.layer?.backgroundColor = PanelPalette.gray(1,alpha:0.09).cgColor
-            button.toolTip = shortcut.name + (FileManager.default.fileExists(atPath:shortcut.path) ? "" : " — приложение перемещено или удалено")
+            button.toolTip = shortcut.name + (FileManager.default.fileExists(atPath:shortcut.path) ? "" : L(" — приложение перемещено или удалено"))
             addSubview(button);customApps.append(button)
         }
 
@@ -730,7 +730,7 @@ final class PanelContentView: NSView {
                 shelfViews.append(b)
             }
             if hiddenItems.isEmpty {
-                let none = label("все плитки на месте", size: 9, color: PanelPalette.gray(0.58,alpha:1))
+                let none = label(L("все плитки на месте"), size: 9, color: PanelPalette.gray(0.58,alpha:1))
                 none.frame = NSRect(x: 0, y: 24, width: 160, height: 12)
                 shelf.addSubview(none)
                 shelfViews.append(none)
@@ -785,40 +785,40 @@ final class PanelContentView: NSView {
     func update(_ s: MetricSnapshot) {
         for t in tiles {
             t.update(s)
-            if t.item == .net {t.toolTip="Текущий трафик: ↓ \(Fmt.speed(s.down)) · ↑ \(Fmt.speed(s.up))"}
+            if t.item == .net {t.toolTip=L("Текущий трафик: ↓ %@ · ↑ %@", Fmt.speed(s.down), Fmt.speed(s.up))}
         }
     }
 
     override func layout() {
         super.layout()
         bg.frame = bounds
-        let tileWidth=(layoutWidth-L.pad*2-CGFloat(metricColumns-1)*L.gap)/CGFloat(metricColumns)
-        profileHeader.frame=NSRect(x:L.pad,y:notchHeight+2,width:bounds.width-L.pad*2,height:28)
+        let tileWidth=(layoutWidth-Layout.pad*2-CGFloat(metricColumns-1)*Layout.gap)/CGFloat(metricColumns)
+        profileHeader.frame=NSRect(x:Layout.pad,y:notchHeight+2,width:bounds.width-Layout.pad*2,height:28)
         profileHeader.isHidden=mediaOnly
         var y = notchHeight + 2 + profileRowHeight
         var col = 0
         var rowTop = y
         for t in tiles {
-            if col == metricColumns { col = 0; y += L.tileH + L.gap }
-            t.frame = NSRect(x: L.pad + CGFloat(col) * (tileWidth + L.gap), y: y, width: tileWidth, height: L.tileH)
+            if col == metricColumns { col = 0; y += Layout.tileH + Layout.gap }
+            t.frame = NSRect(x: Layout.pad + CGFloat(col) * (tileWidth + Layout.gap), y: y, width: tileWidth, height: Layout.tileH)
             col += 1
         }
-        if !tiles.isEmpty { rowTop = y + L.tileH + L.rowGap }
+        if !tiles.isEmpty { rowTop = y + Layout.tileH + Layout.rowGap }
         if !mediaBar.isHidden {
-            mediaBar.frame = NSRect(x: L.pad, y: rowTop, width: bounds.width - L.pad * 2, height: L.mediaH)
-            rowTop += L.mediaH + L.rowGap
+            mediaBar.frame = NSRect(x: Layout.pad, y: rowTop, width: bounds.width - Layout.pad * 2, height: Layout.mediaH)
+            rowTop += Layout.mediaH + Layout.rowGap
         }
         let shortcuts: [NSView] = apps + customApps + tools + actions
         for (index,view) in shortcuts.enumerated() {
-            view.frame=NSRect(x:L.pad+CGFloat(index%shortcutColumns)*(L.appW+L.actionGap),
-                y:rowTop+CGFloat(index/shortcutColumns)*(L.appH+L.actionGap),width:L.appW,height:L.appH)
+            view.frame=NSRect(x:Layout.pad+CGFloat(index%shortcutColumns)*(Layout.appW+Layout.actionGap),
+                y:rowTop+CGFloat(index/shortcutColumns)*(Layout.appH+Layout.actionGap),width:Layout.appW,height:Layout.appH)
         }
-        let shelfY = rowTop + CGFloat(shortcutRows)*(L.appH+L.actionGap) + 8
+        let shelfY = rowTop + CGFloat(shortcutRows)*(Layout.appH+Layout.actionGap) + 8
         for view in tiles {view.isHidden=mediaOnly}
         for view in shortcuts {view.isHidden=mediaOnly}
         shelf.isHidden = mediaOnly || !editing
-        if mediaOnly { mediaBar.frame=NSRect(x:L.pad,y:notchHeight+2,width:bounds.width-L.pad*2,height:L.mediaH) }
-        shelf.frame = NSRect(x: L.pad, y: shelfY, width: bounds.width - L.pad * 2, height: L.shelfH)
+        if mediaOnly { mediaBar.frame=NSRect(x:Layout.pad,y:notchHeight+2,width:bounds.width-Layout.pad*2,height:Layout.mediaH) }
+        shelf.frame = NSRect(x: Layout.pad, y: shelfY, width: bounds.width - Layout.pad * 2, height: Layout.shelfH)
         shelfTitle.frame = NSRect(x: 0, y: 2, width: shelf.frame.width - 60, height: 12)
         doneButton.frame = NSRect(x: shelf.frame.width - 56, y: 0, width: 56, height: 16)
     }
@@ -862,7 +862,7 @@ final class HUDContentView: NSView {
         icon.image = NSImage(systemSymbolName: muted ? "speaker.slash.fill" : symbolName, accessibilityDescription: nil)?
             .withSymbolConfiguration(cfg)
         icon.contentTintColor = PanelPalette.foreground
-        valueLabel.stringValue = muted ? "выкл" : "\(Int((self.value * 100).rounded()))%"
+        valueLabel.stringValue = muted ? L("выкл") : "\(Int((self.value * 100).rounded()))%"
         needsLayout = true
     }
 
@@ -886,11 +886,11 @@ final class SettingsContentView: NSView {
     init(onLogin: @escaping (Bool) -> Void) {
         self.onLogin = onLogin
         let d = UserDefaults.standard
-        hudSwitch = NSButton(checkboxWithTitle: "HUD яркости и громкости", target: nil, action: nil)
+        hudSwitch = NSButton(checkboxWithTitle: L("HUD яркости и громкости"), target: nil, action: nil)
         hudSwitch.state = (d.object(forKey: "NotchDeck.hudEnabled") == nil || d.bool(forKey: "NotchDeck.hudEnabled")) ? .on : .off
-        captureSwitch = NSButton(checkboxWithTitle: "Показывать в скриншотах", target: nil, action: nil)
+        captureSwitch = NSButton(checkboxWithTitle: L("Показывать в скриншотах"), target: nil, action: nil)
         captureSwitch.state = (d.object(forKey: "NotchDeck.showInCapture") == nil || d.bool(forKey: "NotchDeck.showInCapture")) ? .on : .off
-        loginSwitch = NSButton(checkboxWithTitle: "Запускать при входе", target: nil, action: nil)
+        loginSwitch = NSButton(checkboxWithTitle: L("Запускать при входе"), target: nil, action: nil)
         loginSwitch.state = LaunchAtLogin.isEnabled ? .on : .off
         super.init(frame: NSRect(x: 0, y: 0, width: 330, height: 200))
         let title = label("NotchDeck", size: 15, weight: .semibold, color: .labelColor)
@@ -905,11 +905,11 @@ final class SettingsContentView: NSView {
             b.action = #selector(toggled(_:))
             addSubview(b)
         }
-        let reset = NSButton(title: "Вернуть все плитки", target: self, action: #selector(resetTiles))
+        let reset = NSButton(title: L("Вернуть все плитки"), target: self, action: #selector(resetTiles))
         reset.frame = NSRect(x: 16, y: 20, width: 160, height: 24)
         reset.bezelStyle = .rounded
         addSubview(reset)
-        let quit = NSButton(title: "Выход", target: self, action: #selector(quitApp))
+        let quit = NSButton(title: L("Выход"), target: self, action: #selector(quitApp))
         quit.frame = NSRect(x: 246, y: 20, width: 70, height: 24)
         quit.bezelStyle = .rounded
         addSubview(quit)
@@ -1052,7 +1052,7 @@ final class LevelWingView: NSView {
         }
         icon.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 12, weight: .semibold))
-        pct.stringValue = muted ? "выкл" : String(format: "%.0f%%", v * 100)
+        pct.stringValue = muted ? L("выкл") : String(format: "%.0f%%", v * 100)
         progress = CGFloat(max(0, min(1, muted ? 0 : v)))
         needsLayout = true
         needsDisplay = true

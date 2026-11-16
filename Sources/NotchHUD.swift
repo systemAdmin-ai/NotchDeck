@@ -668,17 +668,17 @@ final class IslandView: NSView {
             let palette = NSImage.SymbolConfiguration(paletteColors: [color])
             (base.withSymbolConfiguration(palette) ?? base).draw(in: rect)
         }
-        var text = muted ? "выкл" : String(format: "%.0f%%", progress*100)
+        var text = muted ? L("выкл") : String(format: "%.0f%%", progress*100)
         if let warning {
             switch warning {
             case .memory:text="RAM"
             case .cpu:text="CPU"
-            case .temperature:text="Жарко"
-            case .battery:text="Заряд"
+            case .temperature:text=L("Жарко")
+            case .battery:text=L("Заряд")
             case .off:text=""
             }
         }
-        if charging {text="Заряд"}
+        if charging {text=L("Заряд")}
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .semibold),
             .foregroundColor: color

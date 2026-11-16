@@ -26,20 +26,20 @@ final class ConnectionMonitor {
     }
     static func happStatus()->String {
         guard let prefs=SCPreferencesCreate(nil,"NotchDeck" as CFString,nil),
-              let services=SCNetworkServiceCopyAll(prefs) as? [SCNetworkService] else{return "Нет данных"}
+              let services=SCNetworkServiceCopyAll(prefs) as? [SCNetworkService] else{return L("Нет данных")}
         for service in services {
             let name=SCNetworkServiceGetName(service) as String? ?? ""
             guard name.localizedCaseInsensitiveContains("Happ") else{continue}
-            guard let identifier=SCNetworkServiceGetServiceID(service),let connection=SCNetworkConnectionCreateWithServiceID(nil,identifier,nil,nil) else{return "Нет данных"}
+            guard let identifier=SCNetworkServiceGetServiceID(service),let connection=SCNetworkConnectionCreateWithServiceID(nil,identifier,nil,nil) else{return L("Нет данных")}
             switch SCNetworkConnectionGetStatus(connection) {
-            case .connected:return "Подключён"
-            case .connecting:return "Подключение"
-            case .disconnecting:return "Отключение"
-            case .disconnected:return "Выключен"
-            default:return "Нет данных"
+            case .connected:return L("Подключён")
+            case .connecting:return L("Подключение")
+            case .disconnecting:return L("Отключение")
+            case .disconnected:return L("Выключен")
+            default:return L("Нет данных")
             }
         }
-        return FileManager.default.fileExists(atPath:"/Applications/Happ.app") ? "Не настроен":"Не установлен"
+        return FileManager.default.fileExists(atPath:"/Applications/Happ.app") ? L("Не настроен"):L("Не установлен")
     }
     static func parseCheckpoint(_ output:String)->String {
         // Parse only the product's status field. Never infer connection from a running
@@ -49,18 +49,18 @@ final class ConnectionMonitor {
             guard trimmed.hasPrefix("status:") else{continue}
             let value=trimmed.dropFirst(7).trimmingCharacters(in:.whitespaces)
             switch value {
-            case "connected":return "Подключён"
-            case "idle","disconnected","not connected":return "Выключен"
-            case "connecting":return "Подключение"
-            case "disconnecting":return "Отключение"
-            default:return "Нет данных"
+            case "connected":return L("Подключён")
+            case "idle","disconnected","not connected":return L("Выключен")
+            case "connecting":return L("Подключение")
+            case "disconnecting":return L("Отключение")
+            default:return L("Нет данных")
             }
         }
-        return "Нет данных"
+        return L("Нет данных")
     }
     static func checkpointStatus()->String {
         let path="/Library/Application Support/Checkpoint/Endpoint Connect/trac"
-        guard FileManager.default.isExecutableFile(atPath:path) else{return "Нет данных"}
+        guard FileManager.default.isExecutableFile(atPath:path) else{return L("Нет данных")}
         let process=Process(),pipe=Pipe()
         process.executableURL=URL(fileURLWithPath:path);process.arguments=["info"]
         process.standardOutput=pipe;process.standardError=FileHandle.nullDevice
@@ -75,9 +75,9 @@ final class ConnectionMonitor {
             let data=pipe.fileHandleForReading.readDataToEndOfFile()
             process.waitUntilExit();watchdog.cancel()
             result.lock();let timeout=timedOut;result.unlock()
-            guard !timeout,process.terminationStatus==0 else{return "Нет данных"}
+            guard !timeout,process.terminationStatus==0 else{return L("Нет данных")}
             return parseCheckpoint(String(data:data,encoding:.utf8) ?? "")
-        } catch {watchdog.cancel();return "Нет данных"}
+        } catch {watchdog.cancel();return L("Нет данных")}
     }
     static func open(_ item:Item) {
         let path=item == .happStatus ? "/Applications/Happ.app":"/Applications/Endpoint Security VPN.app"

@@ -162,17 +162,17 @@ final class ClipboardPanelController: NSObject {
     }
 
     private func show() {
-        let w = ToolWindow(size: size, title: "Буфер обмена")
+        let w = ToolWindow(size: size, title: L("Буфер обмена"))
         let root = ToolBackground(frame: NSRect(origin: .zero, size: size))
         w.contentView = root
 
-        let head = NSTextField(labelWithString: "Буфер обмена")
+        let head = NSTextField(labelWithString: L("Буфер обмена"))
         head.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         head.textColor = .labelColor
         head.frame = NSRect(x: 14, y: 8, width: 200, height: 16)
         root.addSubview(head)
 
-        let clearBtn = NSButton(title: "Очистить", target: self, action: #selector(clearAll))
+        let clearBtn = NSButton(title: L("Очистить"), target: self, action: #selector(clearAll))
         clearBtn.isBordered = false
         clearBtn.font = NSFont.systemFont(ofSize: 10)
         clearBtn.contentTintColor = .secondaryLabelColor
@@ -190,7 +190,7 @@ final class ClipboardPanelController: NSObject {
         let items = ClipboardStore.shared.items
         var y: CGFloat = 0
         if items.isEmpty {
-            let none = NSTextField(labelWithString: "Пока пусто — скопируй что-нибудь")
+            let none = NSTextField(labelWithString: L("Пока пусто — скопируй что-нибудь"))
             none.font = NSFont.systemFont(ofSize: 10)
             none.textColor = .secondaryLabelColor
             none.frame = NSRect(x: 8, y: 8, width: 300, height: 14)
@@ -198,11 +198,11 @@ final class ClipboardPanelController: NSObject {
         }
         for (i, it) in items.enumerated() {
             let row = ToolRow(symbol: it.symbol, title: it.preview,
-                              subtitle: i == 0 ? "последнее" : "\(i + 1)-е")
+                              subtitle: i == 0 ? L("последнее") : L("%d-е", i + 1))
             row.frame = NSRect(x: 0, y: y, width: scroll.frame.width - 2, height: 34)
             row.onClick = { [weak self] in
                 ClipboardStore.shared.restore(it)
-                Signal.post("Скопировано из истории", symbol: "doc.on.doc.fill")
+                Signal.post(L("Скопировано из истории"), symbol: "doc.on.doc.fill")
                 self?.close()
             }
             doc.addSubview(row)
@@ -252,17 +252,17 @@ final class ShelfPanelController: NSObject {
     }
 
     private func show() {
-        let w = ToolWindow(size: size, title: "Полка")
+        let w = ToolWindow(size: size, title: L("Полка"))
         let root = ShelfDropView(frame: NSRect(origin: .zero, size: size))
         root.onDrop = { [weak self] urls in
             ShelfStore.shared.add(urls)
-            Signal.post("На полке: \(ShelfStore.shared.urls.count)", symbol: "tray.full.fill")
+            Signal.post(L("На полке: %d", ShelfStore.shared.urls.count), symbol: "tray.full.fill")
             self?.close()
             self?.show()
         }
         w.contentView = root
 
-        let head = NSTextField(labelWithString: "Полка — перетащи файл сюда")
+        let head = NSTextField(labelWithString: L("Полка — перетащи файл сюда"))
         head.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         head.textColor = .labelColor
         head.frame = NSRect(x: 14, y: 8, width: 300, height: 16)
@@ -279,7 +279,7 @@ final class ShelfPanelController: NSObject {
         let files = ShelfStore.shared.urls
         var y: CGFloat = 0
         if files.isEmpty {
-            let none = NSTextField(labelWithString: "Пусто. Перетащи файл в это окно.")
+            let none = NSTextField(labelWithString: L("Пусто. Перетащи файл в это окно."))
             none.font = NSFont.systemFont(ofSize: 10)
             none.textColor = .secondaryLabelColor
             none.frame = NSRect(x: 8, y: 8, width: 300, height: 14)

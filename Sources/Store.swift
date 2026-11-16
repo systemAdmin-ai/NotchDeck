@@ -38,27 +38,27 @@ enum Item: String, CaseIterable, Identifiable {
         switch self {
         case .cpu: return "CPU"
         case .ram: return "RAM"
-        case .temp: return "Темп."
-        case .battery: return "Батарея"
-        case .net: return "Сеть"
-        case .disk: return "Диск"
+        case .temp: return L("Темп.")
+        case .battery: return L("Батарея")
+        case .net: return L("Сеть")
+        case .disk: return L("Диск")
         case .uptime: return "Uptime"
         case .ip: return "IP"
         case .happStatus:return "Happ"
         case .checkpointStatus:return "Check Point"
-        case .quickNote:return "Заметки"
-        case .recordMic:return "Микрофон записи"
-        case .recordAudio:return "Звук записи"
-        case .sleep: return "Сон экрана"
-        case .lockScreen: return "Заблокировать"
-        case .mediaToggle: return "Пауза / играть"
-        case .volumeMute: return "Без звука"
-        case .downloads: return "Загрузки"
-        case .preferences: return "Настройки"
-        case .clipboard: return "Буфер"
-        case .screenshot: return "Скрин"
-        case .record: return "Запись"
-        case .shelf: return "Полка"
+        case .quickNote:return L("Заметки")
+        case .recordMic:return L("Микрофон записи")
+        case .recordAudio:return L("Звук записи")
+        case .sleep: return L("Сон экрана")
+        case .lockScreen: return L("Заблокировать")
+        case .mediaToggle: return L("Пауза / играть")
+        case .volumeMute: return L("Без звука")
+        case .downloads: return L("Загрузки")
+        case .preferences: return L("Настройки")
+        case .clipboard: return L("Буфер")
+        case .screenshot: return L("Скрин")
+        case .record: return L("Запись")
+        case .shelf: return L("Полка")
         }
     }
 

@@ -22,10 +22,10 @@ final class ClipItem {
         switch kind {
         case .text:
             let t = (text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            return t.isEmpty ? "(пусто)" : String(t.prefix(120)).replacingOccurrences(of: "\n", with: " ")
+            return t.isEmpty ? L("(пусто)") : String(t.prefix(120)).replacingOccurrences(of: "\n", with: " ")
         case .image:
             let w = Int(image?.size.width ?? 0), h = Int(image?.size.height ?? 0)
-            return "Изображение \(w)×\(h)"
+            return L("Изображение %d×%d", w, h)
         case .files:
             return urls.map { $0.lastPathComponent }.joined(separator: ", ")
         }
@@ -221,7 +221,7 @@ enum Capture {
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.setString(path.path, forType: .string)
-        Signal.post("Скриншот сохранён", symbol: "camera.fill")
+        Signal.post(L("Скриншот сохранён"), symbol: "camera.fill")
         Dbg.log("screenshot: \(path.path)")
     }
 
@@ -252,24 +252,24 @@ enum Capture {
     static var systemAudioEnabled:Bool {Preferences.shared.bool("recordSystemAudio")}
     static var microphoneEnabled:Bool {Preferences.shared.bool("recordMicrophone",fallback:false)}
     static func toggleSystemAudio() {
-        guard !isRecording else {Signal.post("Звук меняется перед началом записи",symbol:"speaker.wave.2");return}
+        guard !isRecording else {Signal.post(L("Звук меняется перед началом записи"),symbol:"speaker.wave.2");return}
         Preferences.shared.set(!systemAudioEnabled,for:"recordSystemAudio")
-        Signal.post(systemAudioEnabled ? "Системный звук: включён":"Системный звук: выключен",symbol:"speaker.wave.2")
+        Signal.post(systemAudioEnabled ? L("Системный звук: включён"):L("Системный звук: выключен"),symbol:"speaker.wave.2")
     }
     static func toggleMicrophone() {
-        guard !isRecording else {Signal.post("Микрофон меняется перед началом записи",symbol:"mic");return}
+        guard !isRecording else {Signal.post(L("Микрофон меняется перед началом записи"),symbol:"mic");return}
         if microphoneEnabled {Preferences.shared.set(false,for:"recordMicrophone");return}
         switch AVCaptureDevice.authorizationStatus(for:.audio) {
         case .authorized:Preferences.shared.set(true,for:"recordMicrophone")
         case .notDetermined:
             AVCaptureDevice.requestAccess(for:.audio) {granted in DispatchQueue.main.async {
                 if granted {Preferences.shared.set(true,for:"recordMicrophone")}
-                else {Signal.post("Доступ к микрофону не разрешён",symbol:"mic.slash")}
+                else {Signal.post(L("Доступ к микрофону не разрешён"),symbol:"mic.slash")}
             }}
         default:
-            let alert=NSAlert();alert.messageText="Нет доступа к микрофону"
-            alert.informativeText="Включи доступ NotchDeck в настройках микрофона. Запись без микрофона продолжает работать."
-            alert.addButton(withTitle:"Открыть настройки");alert.addButton(withTitle:"Отмена")
+            let alert=NSAlert();alert.messageText=L("Нет доступа к микрофону")
+            alert.informativeText=L("Включи доступ NotchDeck в настройках микрофона. Запись без микрофона продолжает работать.")
+            alert.addButton(withTitle:L("Открыть настройки"));alert.addButton(withTitle:L("Отмена"))
             if alert.runModal() == .alertFirstButtonReturn,let url=URL(string:"x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone") {NSWorkspace.shared.open(url)}
         }
     }
@@ -291,18 +291,18 @@ enum Capture {
     static func toggleRecording() -> Bool {
         if isRecording {stopRecording();return false}
         let alert=NSAlert()
-        alert.messageText="Запись экрана"
-        alert.informativeText="Выбери экран и звук перед началом. Остановить запись можно красной кнопкой в чёлке."
-        alert.addButton(withTitle:"Начать запись");alert.addButton(withTitle:"Отмена")
+        alert.messageText=L("Запись экрана")
+        alert.informativeText=L("Выбери экран и звук перед началом. Остановить запись можно красной кнопкой в чёлке.")
+        alert.addButton(withTitle:L("Начать запись"));alert.addButton(withTitle:L("Отмена"))
         let options=NSView(frame:NSRect(x:0,y:0,width:320,height:122))
         let mic=NSPopUpButton(frame:NSRect(x:0,y:43,width:320,height:28),pullsDown:false)
-        mic.addItems(withTitles:["Без микрофона","Микрофон — системный вход"])
+        mic.addItems(withTitles:[L("Без микрофона"),L("Микрофон — системный вход")])
         let area=NSPopUpButton(frame:NSRect(x:0,y:85,width:320,height:28),pullsDown:false)
-        area.addItems(withTitles:["Основной экран целиком","Выбрать область экрана"])
-        area.setAccessibilityLabel("Область записи");options.addSubview(area)
+        area.addItems(withTitles:[L("Основной экран целиком"),L("Выбрать область экрана")])
+        area.setAccessibilityLabel(L("Область записи"));options.addSubview(area)
         mic.selectItem(at:microphoneEnabled ? 1:0)
-        mic.setAccessibilityLabel("Микрофон записи")
-        let sound=NSButton(checkboxWithTitle:"Записывать звук приложений",target:nil,action:nil)
+        mic.setAccessibilityLabel(L("Микрофон записи"))
+        let sound=NSButton(checkboxWithTitle:L("Записывать звук приложений"),target:nil,action:nil)
         sound.frame=NSRect(x:0,y:7,width:320,height:25);sound.state=systemAudioEnabled ? .on:.off
         options.addSubview(mic);options.addSubview(sound);alert.accessoryView=options
         NSApp.activate(ignoringOtherApps:true)
@@ -312,13 +312,13 @@ enum Capture {
         Preferences.shared.set(sound.state == .on,for:"recordSystemAudio")
         if wantsMic && AVCaptureDevice.authorizationStatus(for:.audio) == .notDetermined {
             AVCaptureDevice.requestAccess(for:.audio) {granted in DispatchQueue.main.async {
-                guard granted else {Signal.post("Микрофон не разрешён · запись не начата",symbol:"mic.slash");return}
+                guard granted else {Signal.post(L("Микрофон не разрешён · запись не начата"),symbol:"mic.slash");return}
                 Preferences.shared.set(true,for:"recordMicrophone");_ = startRecording(interactive:interactive)
             }}
             return false
         }
         if wantsMic && AVCaptureDevice.authorizationStatus(for:.audio) != .authorized {
-            Signal.post("Нет доступа к микрофону · выбери запись без микрофона или разреши доступ в настройках",symbol:"mic.slash")
+            Signal.post(L("Нет доступа к микрофону · выбери запись без микрофона или разреши доступ в настройках"),symbol:"mic.slash")
             return false
         }
         Preferences.shared.set(wantsMic,for:"recordMicrophone")
@@ -335,9 +335,9 @@ enum Capture {
     static func startRecording(seconds:Int?=nil, test:Bool=false,interactive:Bool=false) -> Bool {
         guard !isRecording else{return false}
         guard CGPreflightScreenCaptureAccess() else {
-            let alert=NSAlert();alert.messageText="Нужен доступ к записи экрана"
-            alert.informativeText="Разреши NotchDeck в разделе «Конфиденциальность и безопасность → Запись экрана и системного звука», затем перезапусти приложение."
-            alert.addButton(withTitle:"Открыть настройки");alert.addButton(withTitle:"Отмена")
+            let alert=NSAlert();alert.messageText=L("Нужен доступ к записи экрана")
+            alert.informativeText=L("Разреши NotchDeck в разделе «Конфиденциальность и безопасность → Запись экрана и системного звука», затем перезапусти приложение.")
+            alert.addButton(withTitle:L("Открыть настройки"));alert.addButton(withTitle:L("Отмена"))
             if alert.runModal() == .alertFirstButtonReturn,let url=URL(string:"x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {NSWorkspace.shared.open(url)}
             return false
         }
@@ -348,7 +348,7 @@ enum Capture {
         recorder=session;recordingURL=path;recordingStarted=nil;stopping=false
         session.onChange = { [weak session] in
             guard let session,recorder === session else{return}
-            if session.started && recordingStarted == nil {recordingStarted=Date();Signal.post("Идёт запись экрана",symbol:"record.circle.fill")}
+            if session.started && recordingStarted == nil {recordingStarted=Date();Signal.post(L("Идёт запись экрана"),symbol:"record.circle.fill")}
             changed()
         }
         session.onFinish = { [weak session] error in
@@ -356,7 +356,7 @@ enum Capture {
             let size=(try? FileManager.default.attributesOfItem(atPath:path.path)[.size] as? NSNumber)?.intValue ?? 0
             recorder=nil;recordingStarted=nil;stopping=false;changed()
             Dbg.log("record: session finished bytes=\(size) error=\(error?.localizedDescription ?? "none") file=\(path.path)")
-            Signal.post(error == nil && size>1024 ? "Запись сохранена":"Не удалось сохранить запись · \(error?.localizedDescription ?? "пустой файл")",symbol:error == nil ? "checkmark.circle":"exclamationmark.triangle")
+            Signal.post(error == nil && size>1024 ? L("Запись сохранена"):L("Не удалось сохранить запись · %@", error?.localizedDescription ?? L("пустой файл")),symbol:error == nil ? "checkmark.circle":"exclamationmark.triangle")
         }
         session.start(systemAudio:systemAudioEnabled,microphone:test ? false:microphoneEnabled,rect:region,seconds:seconds)
         changed()

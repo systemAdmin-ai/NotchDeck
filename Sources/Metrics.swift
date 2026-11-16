@@ -291,9 +291,9 @@ final class Metrics {
     func uptimeString() -> String {
         let up = Int(ProcessInfo.processInfo.systemUptime)
         let d = up / 86400, h = (up % 86400) / 3600, m = (up % 3600) / 60
-        if d > 0 { return "\(d)д \(h)ч" }
-        if h > 0 { return "\(h)ч \(String(format: "%02d", m))м" }
-        return "\(m)м"
+        if d > 0 { return L("%dд %dч", d, h) }
+        if h > 0 { return L("%dч %@м", h, String(format: "%02d", m)) }
+        return L("%dм", m)
     }
 
     // IP / VPN

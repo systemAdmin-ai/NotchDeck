@@ -38,7 +38,7 @@ final class ProcRow: NSView {
         let protectedProc = Procs.isProtected(info)
 
         killButton.isBordered = false
-        killButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Завершить")?
+        killButton.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: L("Завершить"))?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 13, weight: .medium))
         killButton.contentTintColor = .secondaryLabelColor
         killButton.target = self
@@ -48,12 +48,12 @@ final class ProcRow: NSView {
         // «закрыть приложение целиком» — только если у бандла больше одного процесса
         killAppButton.isBordered = false
         killAppButton.image = NSImage(systemSymbolName: "rectangle.stack.badge.minus",
-                                      accessibilityDescription: "Закрыть приложение")?
+                                      accessibilityDescription: L("Закрыть приложение"))?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 12, weight: .medium))
         killAppButton.contentTintColor = .secondaryLabelColor
         killAppButton.target = self
         killAppButton.action = #selector(killAppTapped)
-        killAppButton.toolTip = "Закрыть все \(bundleCount) процесса приложения"
+        killAppButton.toolTip = L("Закрыть все %d процесса приложения", bundleCount)
         killAppButton.isHidden = protectedProc || bundleCount < 2 || info.bundlePath == nil
 
         addSubview(nameLabel)
@@ -68,7 +68,7 @@ final class ProcRow: NSView {
 
     var valueText: String {
         switch mode {
-        case .memory: return String(format: "%.0f МБ", info.megabytes)
+        case .memory: return String(format: L("%.0f МБ"), info.megabytes)
         case .cpu: return String(format: "%.0f %%", Double(info.cpuTime))
         }
     }
@@ -102,7 +102,7 @@ final class ProcRow: NSView {
             return
         }
         pendingKill = Date()
-        flash(label: memLabel, button: killButton, text: "точно?")
+        flash(label: memLabel, button: killButton, text: L("точно?"))
     }
 
     @objc private func killAppTapped() {
@@ -112,7 +112,7 @@ final class ProcRow: NSView {
             return
         }
         pendingApp = Date()
-        flash(label: memLabel, button: killAppButton, text: "всё (\(bundleCount))?")
+        flash(label: memLabel, button: killAppButton, text: L("всё (%d)?", bundleCount))
     }
 }
 
@@ -175,14 +175,14 @@ final class ProcessPanelController: NSObject {
         switcher = seg
 
         // кнопка очистки кэша — заметная, с иконкой и подписью
-        let purge = NSButton(title: " Очистить кэш", target: self, action: #selector(purgeTapped))
+        let purge = NSButton(title: L(" Очистить кэш"), target: self, action: #selector(purgeTapped))
         purge.bezelStyle = .rounded
         purge.font = NSFont.systemFont(ofSize: 10.5, weight: .medium)
         purge.image = NSImage(systemSymbolName: "memorychip", accessibilityDescription: nil)?
             .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 10, weight: .semibold))
         purge.imagePosition = .imageLeading
         purge.contentTintColor = NSColor(srgbRed: 0.42, green: 0.80, blue: 0.71, alpha: 1)
-        purge.toolTip = "Освободить кэш памяти (система попросит права администратора)"
+        purge.toolTip = L("Освободить кэш памяти (система попросит права администратора)")
         purge.frame = NSRect(x: 168, y: 5, width: 196, height: 24)
         purge.autoresizingMask = [.minXMargin]
         root.addSubview(purge)
@@ -229,14 +229,14 @@ final class ProcessPanelController: NSObject {
     @objc private func purgeTapped() {
         guard let b = purgeButton else { return }
         b.isEnabled = false
-        b.title = " Очищаем…"
+        b.title = L(" Очищаем…")
         Dbg.log("purge: запуск очистки кэша")
         MemoryPurge.run(allowPrompt: true) { ok, message, before, after in
             b.isEnabled = true
-            b.title = " Очистить кэш"
+            b.title = L(" Очистить кэш")
             let freed = after > before ? after - before : 0
             Dbg.log("purge: \(message), свободно \(MemoryPurge.human(after)) (было \(MemoryPurge.human(before)))")
-            Signal.post(ok ? "Кэш очищен · свободно \(MemoryPurge.human(after))" : message,
+            Signal.post(ok ? L("Кэш очищен · свободно %@", MemoryPurge.human(after)) : message,
                         symbol: ok ? "memorychip.fill" : "exclamationmark.triangle.fill")
             self.reload()
         }
@@ -268,7 +268,7 @@ final class ProcessPanelController: NSObject {
             let row = ProcRow(info: p, mode: mode, bundleCount: count)
             row.onKill = { [weak self] proc in
                 Procs.terminate(proc) { ok in
-                    Signal.post(ok ? "Завершён \(proc.name)" : "Не удалось: \(proc.name)",
+                    Signal.post(ok ? L("Завершён %@", proc.name) : L("Не удалось: %@", proc.name),
                                 symbol: ok ? "xmark.octagon.fill" : "exclamationmark.triangle.fill")
                     self?.reload()
                 }
@@ -276,7 +276,7 @@ final class ProcessPanelController: NSObject {
             row.onKillApp = { [weak self] proc in
                 guard let bundle = proc.bundlePath else { return }
                 let n = Procs.terminateBundle(bundle) { count in
-                    Signal.post("Закрыто процессов: \(count)", symbol: "xmark.octagon.fill")
+                    Signal.post(L("Закрыто процессов: %d", count), symbol: "xmark.octagon.fill")
                     self?.reload()
                 }
                 Dbg.log("procs panel: закрываю приложение \(bundle) процессов=\(n)")
@@ -295,10 +295,10 @@ final class ProcessPanelController: NSObject {
             : lastRows
         return rows.map {
             let value = mode == .memory
-                ? String(format: "%.0f МБ", $0.megabytes)
+                ? String(format: L("%.0f МБ"), $0.megabytes)
                 : String(format: "%.0f %%", Double($0.cpuTime))
             return String(format: "%@ pid=%d %@%@", $0.name, $0.pid, value,
-                          Procs.isProtected($0) ? " (защищён)" : "")
+                          Procs.isProtected($0) ? L(" (защищён)") : "")
         }.joined(separator: "\n")
     }
 

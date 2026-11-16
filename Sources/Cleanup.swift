@@ -29,35 +29,35 @@ enum MemoryPurge {
     }
 
     static func human(_ bytes: UInt64) -> String {
-        String(format: "%.2f ГБ", Double(bytes) / 1_073_741_824)
+        String(format: L("%.2f ГБ"), Double(bytes) / 1_073_741_824)
     }
 
     /// - Parameter allowPrompt: если true и без прав не вышло — показать системный запрос прав.
     static func run(allowPrompt: Bool,
                     completion: @escaping (Bool, String, UInt64, UInt64) -> Void) {
         guard available() else {
-            completion(false, "утилита purge не найдена", 0, 0)
+            completion(false, L("утилита purge не найдена"), 0, 0)
             return
         }
         let before = freeBytes()
         DispatchQueue.global(qos: .userInitiated).async {
             let direct = runProcess("/usr/sbin/purge", ["-l"], javaScriptAllowed: false)
             var ok = direct.status == 0 && !direct.err.lowercased().contains("not permitted")
-            var message = ok ? "Кэш очищен" : ""
+            var message = ok ? L("Кэш очищен") : ""
 
             if !ok && allowPrompt {
                 let script = "do shell script \"/usr/sbin/purge\" with administrator privileges"
                 let admin = runProcess("/usr/bin/osascript", ["-e", script], javaScriptAllowed: true)
                 if admin.status == 0 {
                     ok = true
-                    message = "Кэш очищен"
+                    message = L("Кэш очищен")
                 } else if admin.err.contains("-128") || admin.err.lowercased().contains("cancel") {
-                    message = "Отменено"
+                    message = L("Отменено")
                 } else {
-                    message = "Не удалось: нужны права администратора"
+                    message = L("Не удалось: нужны права администратора")
                 }
             } else if !ok {
-                message = "Нужны права администратора"
+                message = L("Нужны права администратора")
             }
 
             let after = freeBytes()
