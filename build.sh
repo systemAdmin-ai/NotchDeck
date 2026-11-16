@@ -21,7 +21,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleIdentifier</key><string>com.notchdeck.app</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>2.0.0</string>
-  <key>CFBundleVersion</key><string>200</string>
+  <key>CFBundleVersion</key><string>210</string>
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
