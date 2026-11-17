@@ -22,7 +22,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>2.1.0</string>
   <key>CFBundleVersion</key><string>220</string>
-  <key>LSMinimumSystemVersion</key><string>26.0</string>
+  <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>CFBundleIconFile</key><string>AppIcon.icns</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
@@ -47,7 +47,7 @@ if [ -n "${APP_NAME:-}" ]; then
   /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $APP_NAME" "$APP/Contents/Info.plist"
 fi
 
-swiftc -target arm64-apple-macos26.0 -swift-version 5 -O -o "$BIN" \
+swiftc -target arm64-apple-macos14.0 -swift-version 5 -O -o "$BIN" \
   Sources/Keyboard/*.swift Sources/L10n.swift Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
   Sources/NowPlaying.swift Sources/Tools.swift Sources/Procs.swift Sources/Keys.swift \
   Sources/ToolPanels.swift Sources/ProcPanel.swift \
@@ -59,7 +59,7 @@ swiftc -target arm64-apple-macos26.0 -swift-version 5 -O -o "$BIN" \
 MRA_SRC="Vendor/mediaremote-adapter"
 FW="$APP/Contents/Resources/mediaremote/MediaRemoteAdapter.framework"
 mkdir -p "$FW/Versions/A/Resources"
-clang -arch arm64 -mmacosx-version-min=26.0 -dynamiclib -O2 -fobjc-arc -fvisibility=default \
+clang -arch arm64 -mmacosx-version-min=14.0 -dynamiclib -O2 -fobjc-arc -fvisibility=default \
   -I"$MRA_SRC/include" -I"$MRA_SRC/src" \
   "$MRA_SRC"/src/adapter/*.m "$MRA_SRC/src/private/MediaRemote.m" "$MRA_SRC"/src/utility/*.m \
   -framework Foundation -framework AppKit -framework UniformTypeIdentifiers \

@@ -7,8 +7,34 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
+  tests:
+    name: Tests
     runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Apple Silicon app
+        run: ./build.sh
+      - name: Bundle checks
+        run: python3 scripts/check_bundle.py "Build/${APP_NAME:-NotchDeck}.app"
+      - name: Keyboard mode
+        run: "Build/NotchDeck.app/Contents/MacOS/NotchDeck --test-keyboard-mode"
+      - name: Profiles
+        run: "Build/NotchDeck.app/Contents/MacOS/NotchDeck --test-profiles"
+      - name: Requirements R39
+        run: "Build/NotchDeck.app/Contents/MacOS/NotchDeck --test-r39"
+      - name: Key routing
+        run: "Build/NotchDeck.app/Contents/MacOS/NotchDeck --test-key-routing"
+      - name: Halo
+        run: "Build/NotchDeck.app/Contents/MacOS/NotchDeck --test-halo"
+      - name: HUD lifecycle
+        run: "Build/NotchDeck.app/Contents/MacOS/NotchDeck --test-hud-lifecycle"
+      - name: Signature
+        run: codesign --verify --deep --strict "Build/NotchDeck.app"
+
+  build:
+    name: Package
+    runs-on: macos-26
+    needs: tests
     steps:
       - uses: actions/checkout@v4
       - name: Build Apple Silicon app

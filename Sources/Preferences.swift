@@ -141,7 +141,7 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
         menu.selectItem(at:AppLanguage.allCases.firstIndex(of:L10n.shared.mode) ?? 0)
         menu.target=self;menu.action=#selector(languageChanged(_:));view.addSubview(menu)
         _=text(L("Язык применяется сразу и сохраняется. По умолчанию — язык системы."),at:NSPoint(x:18,y:132),in:view)
-        _=text(L("Требования: Apple Silicon и macOS 26 или новее."),at:NSPoint(x:18,y:206),in:view)
+        _=text(L("Требования: Apple Silicon и macOS 14 или новее."),at:NSPoint(x:18,y:206),in:view)
         _=button(L("Завершить NotchDeck"),frame:NSRect(x:18,y:300,width:240,height:32),in:view,action:#selector(quitApplication),id:"quitApplication")
     }
     @objc private func quitApplication() {NSApp.terminate(nil)}

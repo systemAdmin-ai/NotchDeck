@@ -33,24 +33,51 @@ class ToolWindow: NSPanel {
 
 /// Стеклянный фон инструмента (Liquid Glass) с тонкой светлой обводкой.
 class ToolBackground: NSView {
-    private var glass: NSGlassEffectView?
+    private var glass: NSView?
 
     override var isFlipped: Bool { true }
 
     override func draw(_ dirtyRect: NSRect) {
         if glass == nil {
-            let g = NSGlassEffectView(frame: bounds)
-            g.cornerRadius = 16
-            g.autoresizingMask = [.width, .height]
-            g.wantsLayer = true
-            addSubview(g, positioned: .below, relativeTo: nil)
-            glass = g
+            glass = makeBackground()
+            if let g = glass {
+                g.autoresizingMask = [.width, .height]
+                g.wantsLayer = true
+                addSubview(g, positioned: .below, relativeTo: nil)
+            }
         }
         glass?.frame = bounds
         let path = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: 16, yRadius: 16)
         NSColor(white: 1, alpha: 0.16).setStroke()
         path.lineWidth = 1
         path.stroke()
+    }
+
+    /// Liquid Glass на macOS 26+, размытие материала на более старых системах.
+    private func makeBackground() -> NSView {
+        if #available(macOS 26.0, *) {
+            let g = NSGlassEffectView(frame: bounds)
+            g.cornerRadius = 16
+            return g
+        }
+        let v = NSVisualEffectView(frame: bounds)
+        v.material = .hudWindow
+        v.blendingMode = .behindWindow
+        v.state = .active
+        v.maskImage = Self.roundedMask(radius: 16)
+        return v
+    }
+
+    private static func roundedMask(radius: CGFloat) -> NSImage {
+        let edge = radius * 2 + 1
+        let image = NSImage(size: NSSize(width: edge, height: edge), flipped: false) { rect in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+            return true
+        }
+        image.capInsets = NSEdgeInsets(top: radius, left: radius, bottom: radius, right: radius)
+        image.resizingMode = .stretch
+        return image
     }
 }
 

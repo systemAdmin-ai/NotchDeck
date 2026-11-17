@@ -6,9 +6,10 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
-  <img src="https://img.shields.io/badge/macOS-26%2B-000000?logo=apple&logoColor=white" alt="macOS 26+">
+  <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14+">
   <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
   <img src="https://img.shields.io/badge/release-2.0.1-63e6d2" alt="Preview 2.0.1">
+  <a href="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml"><img src="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml/badge.svg" alt="Build and tests"></a>
 </p>
 
 <p align="center">
@@ -42,6 +43,14 @@ curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scrip
 ```
 
 The script downloads the archive, verifies its SHA256 against the published `SHA256SUMS.txt`, unpacks it into `/Applications` and launches the app.
+
+**Or with Homebrew:**
+
+```bash
+brew install --cask systemAdmin-ai/notchdeck/notchdeck
+```
+
+Homebrew clears the quarantine flag itself and updates with `brew upgrade`.
 
 **Or manually with the DMG:**
 
@@ -101,13 +110,13 @@ Charging and alerts have their own glow. Close-ups and the brightness animation:
 
 No personal presets, notes, logs or recordings ship. No telemetry or cloud sync.
 [Privacy details](PRIVACY.md). Some media features use a private macOS API and may
-change after OS updates. Tested on macOS 27 with Apple Silicon; Intel is unsupported.
+change after OS updates. Tested on macOS 27 with Apple Silicon; the bundle targets macOS 14 or newer. Intel is unsupported.
 
 See [first launch and permissions](docs/GETTING_STARTED.md).
 
 ## Build
 
-Install Xcode Command Line Tools with macOS 26+ SDK, clone the repository, and run:
+Install Xcode Command Line Tools with macOS 26+ SDK (the app itself targets macOS 14), clone the repository, and run:
 
 ```bash
 ./build.sh

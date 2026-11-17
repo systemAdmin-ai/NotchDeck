@@ -6,9 +6,10 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
-  <img src="https://img.shields.io/badge/macOS-26%2B-000000?logo=apple&logoColor=white" alt="macOS 26+">
+  <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14+">
   <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
   <img src="https://img.shields.io/badge/Preview-2.0.1-63e6d2" alt="Preview 2.0.1">
+  <a href="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml"><img src="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml/badge.svg" alt="Build and tests"></a>
 </p>
 
 <p align="center">
@@ -37,6 +38,14 @@ curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scrip
 ```
 
 Скрипт скачивает архив, сверяет SHA256 с опубликованным `SHA256SUMS.txt`, распаковывает в `/Applications` и запускает приложение.
+
+**Через Homebrew:**
+
+```bash
+brew install --cask systemAdmin-ai/notchdeck/notchdeck
+```
+
+Homebrew сам снимает карантин и обновляет приложение командой `brew upgrade`.
 
 **Вручную через DMG:**
 
@@ -141,7 +150,7 @@ curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scrip
 
 ## Сборка из исходников
 
-Нужны Mac с Apple Silicon, macOS 26+ и Xcode Command Line Tools с SDK macOS 26+.
+Нужны Mac с Apple Silicon, macOS 14 или новее и Xcode Command Line Tools с SDK macOS 26+.
 
 ```bash
 git clone https://github.com/systemAdmin-ai/NotchDeck.git

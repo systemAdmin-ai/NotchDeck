@@ -1,3 +1,10 @@
+# 2.1.0 · macOS 14, CI tests, Homebrew
+
+- The bundle now targets macOS 14 (Sonoma) instead of macOS 26. Liquid Glass stays on
+  macOS 26+, older systems use a blur material with the same radius and outline.
+- Separate `tests` job in CI runs every self-check before packaging; build badge in both READMEs.
+- Install through Homebrew: `brew install --cask systemAdmin-ai/notchdeck/notchdeck`.
+
 # 2.0.1 · Distribution fixes
 
 - Permanent `NotchDeck.dmg` and `NotchDeck.zip` release assets, with checksum verification and automatic alias publication.
