@@ -48,10 +48,15 @@ Apple Silicon, тесты существуют только как флаги б
 `url` на `NotchDeck.dmg`, `app "NotchDeck.app"`, `caveats` про ad-hoc подпись.
 Команда установки: `brew install --cask systemAdmin-ai/notchdeck/notchdeck`.
 
-**Критерий приёмки:** `brew audit --cask notchdeck` без ошибок `error:`;
-`brew install --cask systemAdmin-ai/notchdeck/notchdeck` в чистом окружении
-устанавливает приложение в `/Applications`; `brew uninstall --cask notchdeck`
-его удаляет. В README добавлена строка установки.
+**Критерий приёмки:** `brew audit --cask notchdeck` возвращает 0 без замечаний;
+`brew install --cask systemAdmin-ai/notchdeck/notchdeck` устанавливает версию 2.1.0
+в `/Applications`; `brew uninstall --cask notchdeck` её удаляет. В README добавлена
+строка установки.
+
+**Факт проверки (17.11.2026):** аудит чистый; установлен `2.1.0` с
+`LSMinimumSystemVersion 14.0`; карантин Homebrew не снимает автоматически —
+поэтому и в cask, и в README указан разовый `xattr -dr com.apple.quarantine`
+либо флаг `--no-quarantine`; удаление прошло без остатка в `/Applications`.
 
 ## R5. Тексты требований соответствуют коду
 
