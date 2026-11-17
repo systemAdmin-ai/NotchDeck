@@ -2,7 +2,7 @@
 <h1 align="center">NotchDeck</h1>
 <p align="center">Чёлка MacBook как компактный центр управления.</p>
 <p align="center"><b>macOS 26+ · Apple Silicon · Бесплатно · MIT</b></p>
-<p align="center"><a href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg">Скачать DMG</a> · <a href="docs/GETTING_STARTED.ru.md">Начало работы</a> · <a href="PRIVACY.ru.md">Конфиденциальность</a> · <a href="README.md">English</a></p>
+<p align="center"><a href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg">Скачать DMG</a> · <a href="https://systemAdmin-ai.github.io/NotchDeck/">Документация</a> · <a href="https://systemAdmin-ai.github.io/NotchDeck/demo.html">Интерактивное демо</a> · <a href="docs/GETTING_STARTED.ru.md">Начало работы</a> · <a href="PRIVACY.ru.md">Конфиденциальность</a> · <a href="README.md">English</a></p>
 
 > **Preview 2.0.1.** Приложение ещё развивается. Сборка проверена на macOS 27,
 > Apple Silicon. Intel и версии macOS ниже 26 не поддерживаются этим релизом.

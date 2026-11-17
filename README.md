@@ -4,7 +4,7 @@
 
 **Apple Silicon · macOS 26+ · MIT · Preview 2.0.1**
 
-[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg) · [Русский](README.ru.md)
+[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg) · [Documentation](https://systemAdmin-ai.github.io/NotchDeck/) · [Interactive demo](https://systemAdmin-ai.github.io/NotchDeck/demo.html) · [Русский](README.ru.md)
 
 Hover over the notch for system metrics, app shortcuts, quick notes and screen
 recording. Features include task profiles, eight themes, brightness/volume glow, charging animation,

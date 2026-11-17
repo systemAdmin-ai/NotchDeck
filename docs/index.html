@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NotchDeck — панель в чёлке MacBook</title>
+<meta name="description" content="NotchDeck — панель управления в чёлке MacBook: показатели системы, действия, индикаторы яркости и громкости, режим внешней клавиатуры. Документация и демонстрация.">
+<meta property="og:title" content="NotchDeck — панель в чёлке MacBook">
+<meta property="og:description" content="Показатели, действия, неоновые индикаторы и режим внешней клавиатуры прямо в чёлке.">
+<meta property="og:image" content="screenshots/01-panel.png">
+<style>
+  :root{
+    --bg:#06070a; --bg-soft:#0b0e14; --card:rgba(255,255,255,.042);
+    --ink:#eef2f7; --dim:#8f9caa; --line:rgba(255,255,255,.085);
+    --mint:#63e6d2; --amber:#ffb35c; --green:#3ddc97;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+    background:
+      radial-gradient(900px 460px at 82% -6%, #14324a 0%, transparent 60%),
+      radial-gradient(620px 380px at 4% 100%, #0f2430 0%, transparent 62%),
+      var(--bg);
+    background-attachment:fixed;
+  }
+  a{color:var(--mint);text-decoration:none}
+  a:hover{text-decoration:underline}
+  h1,h2,h3{letter-spacing:-.5px;line-height:1.2}
+  code,pre{font-family:var(--mono);font-size:.88em}
+  code{background:rgba(255,255,255,.075);padding:.12em .42em;border-radius:5px}
+  pre{background:#0a0c11;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto}
+  pre code{background:none;padding:0}
+
+  .shell{display:grid;grid-template-columns:262px minmax(0,1fr)}
+  /* ---------- сайдбар ---------- */
+  .side{
+    position:sticky;top:0;height:100vh;padding:26px 18px 20px;overflow:auto;
+    border-right:1px solid var(--line);background:rgba(6,8,12,.72);backdrop-filter:blur(14px)
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin:0 0 4px;font-weight:650;letter-spacing:-.3px}
+  .brand .mark{width:26px;height:16px;border-radius:0 0 8px 8px;background:#000;border:1px solid rgba(255,255,255,.22);
+    box-shadow:0 0 12px rgba(99,230,210,.34);flex:0 0 auto}
+  .ver{font-size:11px;color:var(--dim);margin:0 0 20px 36px;letter-spacing:.3px}
+  .nav{list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:1px}
+  .nav a{
+    display:block;padding:7px 11px;border-radius:9px;color:var(--dim);font-size:13.5px;
+    border-left:2px solid transparent;text-decoration:none;transition:.15s
+  }
+  .nav a:hover{color:var(--ink);background:rgba(255,255,255,.05);text-decoration:none}
+  .nav a.active{color:#d8fff9;background:rgba(99,230,210,.10);border-left-color:var(--mint)}
+  .side .tools{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:16px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;font:inherit;font-size:13px;
+    padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.055);
+    color:var(--ink);cursor:pointer;text-decoration:none;transition:.16s
+  }
+  .btn:hover{background:rgba(255,255,255,.12);text-decoration:none}
+  .btn.primary{background:rgba(99,230,210,.16);border-color:rgba(99,230,210,.52);color:#d9fffa}
+  .btn.small{font-size:12px;padding:6px 10px}
+
+  /* ---------- контент ---------- */
+  main{max-width:940px;padding:52px 46px 140px}
+  section{scroll-margin-top:26px;margin-bottom:62px}
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .62s ease,transform .62s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  h1{font-size:40px;margin:0 0 10px}
+  .kicker{font-size:12.5px;letter-spacing:2.4px;text-transform:uppercase;color:var(--mint);margin:0 0 14px}
+  h2{font-size:25px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  h3{font-size:16.5px;margin:26px 0 8px}
+  p{margin:0 0 14px;color:#d3dbe4}
+  .lead{font-size:18px;color:#b9c5d2;max-width:64ch}
+
+  /* герой */
+  .hero{position:relative;padding:46px 0 30px;overflow:hidden}
+  .hero-notch{position:relative;width:260px;height:34px;margin:0 0 34px;border-radius:0 0 17px 17px;background:#000;
+    border:1px solid rgba(255,255,255,.16);border-top:none;display:flex;align-items:center;justify-content:center}
+  .hero-notch::after{
+    content:"";position:absolute;inset:auto 6px -2px;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,rgba(99,230,210,.95),transparent);
+    filter:blur(1px);animation:sweep 3.6s ease-in-out infinite
+  }
+  @keyframes sweep{0%,100%{opacity:.25;transform:scaleX(.55)}50%{opacity:1;transform:scaleX(1)}}
+  .cam{width:8px;height:8px;border-radius:50%;background:#12161c;box-shadow:inset 0 0 2px #000}
+
+  .cta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 8px}
+  .stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+  .stat b{display:block;font-size:21px;letter-spacing:-.5px}
+  .stat span{font-size:12px;color:var(--dim)}
+
+  /* карточки */
+  .grid{display:grid;gap:12px}
+  .grid.c2{grid-template-columns:repeat(2,1fr)}
+  .grid.c3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 17px}
+  .card h3{margin:0 0 6px;font-size:15px}
+  .card p{margin:0;font-size:13.5px;color:var(--dim)}
+  .card .ico{font-size:15px;color:var(--mint);margin-bottom:6px;display:block}
+
+  /* шаги */
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps>li{counter-increment:s;position:relative;padding-left:38px;margin-bottom:16px;color:#d3dbe4}
+  ol.steps>li::before{
+    content:counter(s);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;
+    display:grid;place-items:center;font-size:12px;font-weight:650;color:#04211c;
+    background:linear-gradient(160deg,#7ff0dc,#3ddc97)
+  }
+
+  /* таблица */
+  table{width:100%;border-collapse:collapse;font-size:13.7px;margin:8px 0 18px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+  td code{white-space:nowrap}
+
+  /* клавиатурная подсветка */
+  .kbd-demo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 6px}
+  .kb-tile{
+    width:74px;height:74px;border-radius:16px;display:grid;place-items:center;gap:4px;
+    border:1px solid rgba(61,220,151,.55);background:rgba(61,220,151,.14);
+    box-shadow:0 0 26px rgba(61,220,151,.34);transition:.3s;font-size:10px;color:#c9ffe9
+  }
+  .kb-tile svg{width:24px;height:24px;stroke:#9dffdb;fill:none;stroke-width:1.6}
+  .kb-tile.off{border-color:var(--line);background:rgba(255,255,255,.045);box-shadow:none;color:var(--dim)}
+  .kb-tile.off svg{stroke:var(--dim)}
+  .kb-legend{font-size:13px;color:var(--dim)}
+  .kb-legend b{color:#7ff0d3}
+
+  /* галерея */
+  .gal{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .shot{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#0a0c11}
+  .shot img{display:block;width:100%;height:auto}
+  .shot figcaption{position:absolute;left:0;right:0;bottom:0;padding:18px 12px 8px;font-size:11.5px;color:#cfd8e2;
+    background:linear-gradient(transparent,rgba(0,0,0,.78))}
+  .shot.wide{grid-column:span 2}
+  figure{margin:0}
+
+  /* встроенное демо */
+  .demo-frame{width:100%;height:420px;border:1px solid var(--line);border-radius:14px;background:#06070a}
+
+  /* темы */
+  .swatches{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 10px}
+  .sw{width:54px;height:40px;border-radius:9px;border:1px solid var(--line);cursor:pointer;position:relative}
+  .sw[aria-pressed="true"]{outline:2px solid var(--mint);outline-offset:2px}
+  .sw span{position:absolute;left:0;right:0;bottom:-19px;text-align:center;font-size:10px;color:var(--dim)}
+  .swatches{margin-bottom:26px}
+
+  .note{border-left:2px solid rgba(255,179,92,.7);padding:2px 0 2px 13px;color:#d9c4a8;font-size:13.5px}
+
+  .totop{position:fixed;right:22px;bottom:22px;z-index:8;opacity:0;pointer-events:none;transition:.25s}
+  .totop.show{opacity:1;pointer-events:auto}
+
+  footer{border-top:1px solid var(--line);padding-top:18px;font-size:12.5px;color:var(--dim)}
+
+  @media (max-width:900px){
+    .shell{grid-template-columns:1fr}
+    .side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);padding:16px 18px}
+    .nav{flex-direction:row;flex-wrap:wrap}
+    .nav a{border-left:none;border-bottom:2px solid transparent;padding:5px 9px}
+    .nav a.active{border-left:none;border-bottom-color:var(--mint)}
+    .side .tools{flex-direction:row;border-top:none;padding-top:10px}
+    main{padding:32px 20px 90px}
+    h1{font-size:30px}
+    .grid.c2,.grid.c3,.gal{grid-template-columns:1fr}
+    .shot.wide{grid-column:span 1}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="side">
+    <div class="brand"><span class="mark"></span>NotchDeck</div>
+    <div class="ver">2.1 · macOS 26+</div>
+    <ul class="nav" id="nav">
+      <li><a href="#overview" data-i18n="nav.overview">Обзор</a></li>
+      <li><a href="#install" data-i18n="nav.install">Установка</a></li>
+      <li><a href="#features" data-i18n="nav.features">Возможности</a></li>
+      <li><a href="#keyboard" data-i18n="nav.keyboard">Клавиатура</a></li>
+      <li><a href="#themes" data-i18n="nav.themes">Оформления</a></li>
+      <li><a href="#screens" data-i18n="nav.screens">Скриншоты</a></li>
+      <li><a href="#use" data-i18n="nav.use">Использование</a></li>
+      <li><a href="#build" data-i18n="nav.build">Сборка</a></li>
+      <li><a href="#demo" data-i18n="nav.demo">Демо</a></li>
+    </ul>
+    <div class="tools">
+      <a class="btn small primary" href="demo.html" data-i18n="side.demo">Поклацать чёлку</a>
+      <a class="btn small" href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest" data-i18n="side.download">Скачать</a>
+      <button class="btn small" id="lang">English</button>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="hero">
+      <div class="hero-notch"><span class="cam"></span></div>
+      <p class="kicker" data-i18n="hero.kicker">macOS · открытый код · без рекламы</p>
+      <h1 data-i18n="hero.h1">Панель управления в чёлке MacBook</h1>
+      <p class="lead" data-i18n="hero.lead">NotchDeck занимает мёртвую зону вокруг чёлки: показатели системы, быстрые действия, индикаторы яркости и громкости вместо системных, предупреждения и режим внешней клавиатуры. Наведите курсор — панель раскроется.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest" data-i18n="cta.download">Скачать для macOS</a>
+        <a class="btn" href="demo.html" data-i18n="cta.demo">Открыть демо</a>
+        <a class="btn" href="https://github.com/systemAdmin-ai/NotchDeck" data-i18n="cta.github">Исходники</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>9</b><span data-i18n="st.tiles">плиток показателей</span></div>
+        <div class="stat"><b>5</b><span data-i18n="st.themes">оформлений</span></div>
+        <div class="stat"><b>3</b><span data-i18n="st.profiles">профиля</span></div>
+        <div class="stat"><b>0</b><span data-i18n="st.ads">рекламы и телеметрии</span></div>
+      </div>
+    </div>
+
+    <section id="overview" class="reveal">
+      <h2 data-i18n="ov.h">Что это</h2>
+      <p data-i18n="ov.p1">Приложение рисует панель в зоне чёлки и раскрывает её при наведении. В отличие от виджетов, которые всегда на экране, NotchDeck не занимает место: свернувшись, он совпадает с чёлкой, а системные индикаторы яркости и громкости заменяет собственными.</p>
+      <div class="grid c3">
+        <div class="card"><span class="ico">◐</span><h3 data-i18n="ov.c1h">Без окна</h3><p data-i18n="ov.c1p">Панель живёт в строке меню и не появляется в Dock, если это отключено в настройках.</p></div>
+        <div class="card"><span class="ico">⌘</span><h3 data-i18n="ov.c2h">Локально</h3><p data-i18n="ov.c2p">Нет сети, аккаунтов и аналитики: состояние хранится в вашем профиле настроек.</p></div>
+        <div class="card"><span class="ico">⏻</span><h3 data-i18n="ov.c3h">Открытый код</h3><p data-i18n="ov.c3p">Swift, MIT-лицензия, сборка одной командой из исходников.</p></div>
+      </div>
+    </section>
+
+    <section id="install" class="reveal">
+      <h2 data-i18n="in.h">Установка</h2>
+      <ol class="steps">
+        <li data-i18n="in.s1">Скачайте DMG со страницы релизов и перетащите NotchDeck в «Программы».</li>
+        <li data-i18n="in.s2">Откройте приложение. Сборка подписана ad-hoc, поэтому при первом запуске macOS может попросить подтверждение: «Системные настройки → Конфиденциальность и безопасность → Всё равно открыть».</li>
+        <li data-i18n="in.s3">Выдайте разрешение на мониторинг ввода, если планируете режим внешней клавиатуры.</li>
+      </ol>
+      <h3 data-i18n="in.req">Требования</h3>
+      <table>
+        <tr><th data-i18n="in.t1">Параметр</th><th data-i18n="in.t2">Значение</th></tr>
+        <tr><td data-i18n="in.r1">Система</td><td>macOS 26 (Tahoe) и новее</td></tr>
+        <tr><td data-i18n="in.r2">Процессор</td><td>Apple Silicon (arm64), сборка x86_64 — из исходников</td></tr>
+        <tr><td data-i18n="in.r3">Место</td><td data-i18n="in.r3v">около 4 МБ</td></tr>
+        <tr><td data-i18n="in.r4">Разрешения</td><td data-i18n="in.r4v">мониторинг ввода — только для режима клавиатуры</td></tr>
+      </table>
+      <p class="note" data-i18n="in.note">Установка скриптом проверяет контрольную сумму файла: <code>scripts/install.sh</code> из репозитория.</p>
+    </section>
+
+    <section id="features" class="reveal">
+      <h2 data-i18n="ft.h">Возможности</h2>
+      <div class="grid c2">
+        <div class="card"><h3 data-i18n="ft.a">Показатели</h3><p data-i18n="ft.ap">Загрузка процессора, память, температура, батарея, сеть, аптайм, диск, микрофон и таймер записи. Ненужные скрываются в настройках.</p></div>
+        <div class="card"><h3 data-i18n="ft.b">Действия</h3><p data-i18n="ft.bp">Буфер обмена, снимок экрана, запись, заметки и клавиатура — отдельным рядом плиток.</p></div>
+        <div class="card"><h3 data-i18n="ft.c">Индикаторы вместо системных</h3><p data-i18n="ft.cp">Яркость и громкость показываются в чёлке: тонкая полоса и процент, без перекрытия рабочей области.</p></div>
+        <div class="card"><h3 data-i18n="ft.d">Предупреждения</h3><p data-i18n="ft.dp">Память выше порога, заряд ниже 20%, перегрев — короткая вспышка у чёлки с подписью.</p></div>
+        <div class="card"><h3 data-i18n="ft.e">Подключение питания</h3><p data-i18n="ft.ep">Бегущий импульс по кромке чёлки, когда подключили кабель.</p></div>
+        <div class="card"><h3 data-i18n="ft.f">Профили</h3><p data-i18n="ft.fp">Наборы плиток и действий для работы, видео и записи — переключаются одним движением.</p></div>
+      </div>
+      <h3 data-i18n="ft.anim">Как это выглядит</h3>
+      <figure class="shot" style="margin-bottom:10px">
+        <img src="screenshots/neon-brightness.gif" alt="Индикатор яркости в чёлке" loading="lazy">
+        <figcaption data-i18n="ft.cap1">Индикатор яркости: неоновая полоса и процент в зоне чёлки</figcaption>
+      </figure>
+    </section>
+
+    <section id="keyboard" class="reveal">
+      <h2 data-i18n="kb.h">Режим клавиатуры</h2>
+      <p data-i18n="kb.p1">Новое в 2.1. Для внешней USB- или Bluetooth-клавиатуры NotchDeck включает переключение раскладки по Alt+Shift и заменяет левый Ctrl на Command — как на Windows-клавиатуре, подключённой к Mac. Встроенная клавиатура и правый Ctrl не меняются, в терминалах замена отключается.</p>
+      <div class="kbd-demo">
+        <div class="kb-tile" id="kbTile">
+          <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M6 13.5h12"/></svg>
+          <span data-i18n="kb.tile">Клавиатура</span>
+        </div>
+        <div class="kb-legend" data-i18n="kb.legend"><b>Зелёная подсветка</b> — переназначение подтверждено. Оранжевая — конфликт, нет разрешения или включён отдельный DeskBridge.</div>
+      </div>
+      <table>
+        <tr><th data-i18n="kb.tA">Состояние</th><th data-i18n="kb.tB">Что означает</th></tr>
+        <tr><td data-i18n="kb.s1">Авторежим</td><td data-i18n="kb.s1v">Включается при подключении внешней клавиатуры и выключается при отключении</td></tr>
+        <tr><td data-i18n="kb.s2">Ручное выключение</td><td data-i18n="kb.s2v">Сохраняется после переподключения и перезапуска</td></tr>
+        <tr><td data-i18n="kb.s3">Терминалы</td><td data-i18n="kb.s3v">Исключены из замены Ctrl, состояние — янтарное</td></tr>
+        <tr><td data-i18n="kb.s4">DeskBridge</td><td data-i18n="kb.s4v">Если отдельное приложение уже управляет картами — активация блокируется, карты не перезаписываются</td></tr>
+      </table>
+      <p class="note" data-i18n="kb.note">Нужно разрешение «Мониторинг ввода» для самого NotchDeck: разрешение, выданное DeskBridge, не переносится.</p>
+      <p><a href="specs/KEYBOARD-MODE.md" data-i18n="kb.spec">Техническая спецификация режима →</a></p>
+    </section>
+
+    <section id="themes" class="reveal">
+      <h2 data-i18n="th.h">Оформления</h2>
+      <p data-i18n="th.p">Пять стилей панели: от почти прозрачного стекла до неоновой кромки. Стиль меняется целиком, вместе со свечением и фоном плиток.</p>
+      <div class="swatches" id="swatches">
+        <button class="sw" data-sw="glass" aria-pressed="false" style="background:linear-gradient(160deg,rgba(120,150,190,.55),rgba(40,60,90,.35))"><span data-i18n="th.glass">Стекло</span></button>
+        <button class="sw" data-sw="graphite" aria-pressed="false" style="background:linear-gradient(160deg,#3a3a3e,#1c1c1e)"><span data-i18n="th.graphite">Графит</span></button>
+        <button class="sw" data-sw="midnight" aria-pressed="true" style="background:linear-gradient(160deg,#101114,#050506)"><span data-i18n="th.night">Полночь</span></button>
+        <button class="sw" data-sw="glow" aria-pressed="false" style="background:linear-gradient(160deg,#2a1740,#140c1e)"><span data-i18n="th.glow">Сияние</span></button>
+        <button class="sw" data-sw="neon" aria-pressed="false" style="background:linear-gradient(160deg,#062a26,#04080b)"><span data-i18n="th.neon">Неон</span></button>
+      </div>
+      <p data-i18n="th.p2">Выбранный стиль виден в демо: нажмите «Открыть демо», затем «Оформление».</p>
+    </section>
+
+    <section id="screens" class="reveal">
+      <h2 data-i18n="sc.h">Скриншоты</h2>
+      <div class="gal">
+        <figure class="shot wide"><img src="screenshots/01-panel.png" alt="Раскрытая панель в чёлке" loading="lazy"><figcaption data-i18n="sc.c1">Раскрытая панель: плитки показателей и ряд действий</figcaption></figure>
+        <figure class="shot"><img src="screenshots/02-hud-brightness.png" alt="Индикатор яркости" loading="lazy"><figcaption data-i18n="sc.c2">Яркость</figcaption></figure>
+        <figure class="shot"><img src="screenshots/03-hud-volume.png" alt="Индикатор громкости" loading="lazy"><figcaption data-i18n="sc.c3">Громкость</figcaption></figure>
+        <figure class="shot"><img src="screenshots/04-alert-memory.png" alt="Предупреждение о памяти" loading="lazy"><figcaption data-i18n="sc.c4">Предупреждение о памяти</figcaption></figure>
+        <figure class="shot"><img src="screenshots/05-charge-pulse.png" alt="Импульс подключения питания" loading="lazy"><figcaption data-i18n="sc.c5">Подключение питания</figcaption></figure>
+        <figure class="shot"><img src="screenshots/06-settings-design.png" alt="Настройки, раздел дизайна" loading="lazy"><figcaption data-i18n="sc.c6">Настройки → Дизайн</figcaption></figure>
+        <figure class="shot"><img src="screenshots/07-onboarding.png" alt="Первый запуск" loading="lazy"><figcaption data-i18n="sc.c7">Первый запуск</figcaption></figure>
+        <figure class="shot wide"><img src="screenshots/08-profile-work.png" alt="Профиль «Работа»" loading="lazy"><figcaption data-i18n="sc.c8">Профиль «Работа»</figcaption></figure>
+        <figure class="shot"><img src="screenshots/09-profile-video.png" alt="Профиль «Видео»" loading="lazy"><figcaption data-i18n="sc.c9">Профиль «Видео»</figcaption></figure>
+        <figure class="shot"><img src="screenshots/10-profile-recording.png" alt="Профиль «Запись»" loading="lazy"><figcaption data-i18n="sc.c10">Профиль «Запись»</figcaption></figure>
+      </div>
+    </section>
+
+    <section id="use" class="reveal">
+      <h2 data-i18n="us.h">Использование</h2>
+      <p data-i18n="us.p">Наведите курсор на чёлку — панель раскроется. Уведите курсор — свернётся. Плитку можно закрепить кликом, чтобы держать показатели на виду.</p>
+      <table>
+        <tr><th data-i18n="us.t1">Действие</th><th data-i18n="us.t2">Результат</th></tr>
+        <tr><td data-i18n="us.a1">Наведение на чёлку</td><td data-i18n="us.a1v">Раскрыть панель</td></tr>
+        <tr><td data-i18n="us.a2">Клик по клавиатуре</td><td data-i18n="us.a2v">Включить или выключить режим внешней клавиатуры</td></tr>
+        <tr><td data-i18n="us.a3">Правый клик по панели</td><td data-i18n="us.a3v">Меню: настройки, профиль, выход</td></tr>
+        <tr><td data-i18n="us.a4">Настройки</td><td data-i18n="us.a4v">Общие, плитки, приложения, поведение, дизайн, клавиатура</td></tr>
+      </table>
+    </section>
+
+    <section id="build" class="reveal">
+      <h2 data-i18n="bd.h">Сборка из исходников</h2>
+      <p data-i18n="bd.p">Нужен Xcode Command Line Tools. Сборка не требует сторонних зависимостей.</p>
+      <pre><code>git clone https://github.com/systemAdmin-ai/NotchDeck.git
+cd NotchDeck
+./build.sh
+open Build/NotchDeck.app</code></pre>
+      <p data-i18n="bd.p2">Проверки: <code>./scripts/check.sh</code> запускает встроенные тесты, включая 25 проверок режима клавиатуры.</p>
+      <pre><code>./scripts/check.sh</code></pre>
+    </section>
+
+    <section id="demo" class="reveal">
+      <h2 data-i18n="dm.h">Интерактивное демо</h2>
+      <p data-i18n="dm.p">Полная копия панели на HTML и CSS: чёлку можно раскрывать, переключать клавиатуру, тянуть индикаторы и менять оформление. Данные синтетические.</p>
+      <iframe class="demo-frame" src="demo.html" title="Интерактивное демо NotchDeck" loading="lazy"></iframe>
+      <p style="margin-top:12px"><a class="btn primary" href="demo.html" data-i18n="dm.open">Открыть демо на весь экран</a></p>
+    </section>
+
+    <footer>
+      <p data-i18n="fo.p">NotchDeck · MIT · <a href="https://github.com/systemAdmin-ai/NotchDeck">github.com/systemAdmin-ai/NotchDeck</a></p>
+    </footer>
+
+  </main>
+</div>
+
+<a class="btn small totop" id="totop" href="#overview" data-i18n="totop">Наверх</a>
+
+<script>
+(function(){
+  "use strict";
+  var lang = "ru";
+  var I18N = {
+    ru:{},
+    en:{
+      "nav.overview":"Overview","nav.install":"Install","nav.features":"Features","nav.keyboard":"Keyboard",
+      "nav.themes":"Themes","nav.screens":"Screenshots","nav.use":"Usage","nav.build":"Build","nav.demo":"Demo",
+      "side.demo":"Try the notch","side.download":"Download",
+      "hero.kicker":"macOS · open source · no ads",
+      "hero.h1":"A control panel inside the MacBook notch",
+      "hero.lead":"NotchDeck uses the dead space around the notch: system readings, quick actions, its own brightness and volume indicators, alerts and an external keyboard mode. Hover the notch to expand.",
+      "cta.download":"Download for macOS","cta.demo":"Open demo","cta.github":"Source",
+      "st.tiles":"reading tiles","st.themes":"themes","st.profiles":"profiles","st.ads":"ads or telemetry",
+      "ov.h":"What it is",
+      "ov.p1":"The app draws a panel in the notch area and expands it on hover. Unlike always-on widgets it takes no screen space: collapsed, it matches the notch, and it replaces the system brightness and volume indicators with its own.",
+      "ov.c1h":"No window","ov.c1p":"Lives in the menu bar and stays out of the Dock when you turn it off in settings.",
+      "ov.c2h":"Local","ov.c2p":"No network, no accounts, no analytics: state stays in your preferences.",
+      "ov.c3h":"Open source","ov.c3p":"Swift, MIT licence, one-command build from source.",
+      "in.h":"Install",
+      "in.s1":"Download the DMG from the releases page and drag NotchDeck into Applications.",
+      "in.s2":"Open the app. The build is ad-hoc signed, so macOS may ask for confirmation on first launch: System Settings → Privacy & Security → Open Anyway.",
+      "in.s3":"Grant Input Monitoring if you plan to use the external keyboard mode.",
+      "in.req":"Requirements","in.t1":"Item","in.t2":"Value",
+      "in.r1":"System","in.r2":"Chip","in.r3":"Size","in.r3v":"about 4 MB","in.r4":"Permissions","in.r4v":"input monitoring, keyboard mode only",
+      "in.note":"The script installer verifies the file checksum: <code>scripts/install.sh</code> in the repository.",
+      "ft.h":"Features",
+      "ft.a":"Readings","ft.ap":"CPU load, memory, temperature, battery, network, uptime, disk, microphone and a recording timer. Hide the ones you don't need.",
+      "ft.b":"Actions","ft.bp":"Clipboard, screenshot, recording, notes and keyboard as a separate row.",
+      "ft.c":"Instead of system HUDs","ft.cp":"Brightness and volume appear in the notch: a thin bar and a percentage, never over your work.",
+      "ft.d":"Alerts","ft.dp":"Memory above threshold, battery below 20%, high temperature — a short flash with a caption.",
+      "ft.e":"Power connected","ft.ep":"A pulse runs along the notch edge when the cable goes in.",
+      "ft.f":"Profiles","ft.fp":"Tile and action sets for work, video and recording, switched in one motion.",
+      "ft.anim":"How it looks","ft.cap1":"Brightness indicator: a neon bar and percentage inside the notch",
+      "kb.h":"Keyboard mode",
+      "kb.p1":"New in 2.1. For an external USB or Bluetooth keyboard NotchDeck enables Alt+Shift layout switching and maps left Ctrl to Command — like a Windows keyboard plugged into a Mac. The built-in keyboard and right Ctrl stay untouched, terminals are excluded from the remap.",
+      "kb.tile":"Keyboard",
+      "kb.legend":"<b>Green glow</b> means the remap is confirmed. Amber means a conflict, missing permission or a standalone DeskBridge.",
+      "kb.tA":"State","kb.tB":"Meaning",
+      "kb.s1":"Automatic","kb.s1v":"Turns on when an external keyboard connects, off when it disconnects",
+      "kb.s2":"Manual off","kb.s2v":"Survives reconnection and restart",
+      "kb.s3":"Terminals","kb.s3v":"Excluded from the Ctrl remap, status is amber",
+      "kb.s4":"DeskBridge","kb.s4v":"If the standalone app owns the maps, activation is blocked and nothing is overwritten",
+      "kb.note":"Input Monitoring must be granted to NotchDeck itself: a DeskBridge grant does not transfer.",
+      "kb.spec":"Technical spec of the mode →",
+      "th.h":"Themes","th.p":"Five panel styles, from almost transparent glass to a neon edge. The style changes as a whole, including glow and tile background.",
+      "th.glass":"Glass","th.graphite":"Graphite","th.night":"Midnight","th.glow":"Glow","th.neon":"Neon",
+      "th.p2":"The chosen style is visible in the demo: press Open demo, then Appearance.",
+      "sc.h":"Screenshots",
+      "sc.c1":"Expanded panel: reading tiles and action row","sc.c2":"Brightness","sc.c3":"Volume",
+      "sc.c4":"Memory alert","sc.c5":"Power connected","sc.c6":"Settings → Design","sc.c7":"First launch",
+      "sc.c8":"Work profile","sc.c9":"Video profile","sc.c10":"Recording profile",
+      "us.h":"Usage","us.p":"Hover the notch to expand the panel, move away to collapse it. Click a tile to keep the readings on screen.",
+      "us.t1":"Action","us.t2":"Result",
+      "us.a1":"Hover the notch","us.a1v":"Expand the panel",
+      "us.a2":"Click the keyboard","us.a2v":"Toggle external keyboard mode",
+      "us.a3":"Right-click the panel","us.a3v":"Menu: settings, profile, quit",
+      "us.a4":"Settings","us.a4v":"General, tiles, apps, behaviour, design, keyboard",
+      "bd.h":"Build from source","bd.p":"Xcode Command Line Tools are required. No third-party dependencies.",
+      "bd.p2":"Checks: <code>./scripts/check.sh</code> runs the built-in tests, including 25 keyboard mode checks.",
+      "dm.h":"Interactive demo","dm.p":"A full copy of the panel in HTML and CSS: expand the notch, toggle the keyboard, drag the indicators, change the theme. All data is synthetic.",
+      "dm.open":"Open the demo full screen",
+      "fo.p":"NotchDeck · MIT · <a href=\"https://github.com/systemAdmin-ai/NotchDeck\">github.com/systemAdmin-ai/NotchDeck</a>",
+      "totop":"Top"
+    }
+  };
+  // русские строки берём из разметки при первом проходе
+  document.querySelectorAll("[data-i18n]").forEach(function(el){
+    I18N.ru[el.getAttribute("data-i18n")] = el.innerHTML;
+  });
+
+  function applyLang(){
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var k = el.getAttribute("data-i18n");
+      var v = I18N[lang][k];
+      if(v !== undefined) el.innerHTML = v;
+    });
+    document.getElementById("lang").textContent = (lang === "ru" ? "English" : "Русский");
+    document.title = (lang === "ru" ? "NotchDeck — панель в чёлке MacBook" : "NotchDeck — a control panel inside the notch");
+  }
+
+  document.getElementById("lang").addEventListener("click", function(){
+    lang = (lang === "ru") ? "en" : "ru";
+    try{ localStorage.setItem("notchdeck-site-lang", lang); }catch(e){}
+    applyLang();
+  });
+  try{
+    var saved = localStorage.getItem("notchdeck-site-lang");
+    if(saved === "en") lang = "en";
+  }catch(e){}
+  applyLang();
+
+  /* ---------- появление секций ---------- */
+  var items = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, {rootMargin:"0px 0px -12% 0px", threshold:.08});
+    items.forEach(function(el){ io.observe(el); });
+  } else {
+    items.forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* ---------- активный раздел ---------- */
+  var links = Array.prototype.slice.call(document.querySelectorAll("#nav a"));
+  var sections = links.map(function(a){ return document.querySelector(a.getAttribute("href")); });
+  function spy(){
+    var pos = window.scrollY + 140, idx = 0;
+    sections.forEach(function(s, i){ if(s && s.offsetTop <= pos) idx = i; });
+    links.forEach(function(a, i){ a.classList.toggle("active", i === idx); });
+    document.getElementById("totop").classList.toggle("show", window.scrollY > 620);
+  }
+  window.addEventListener("scroll", spy, {passive:true});
+  spy();
+
+  /* ---------- подсветка клавиатуры по наведению на плитку ---------- */
+  var tile = document.getElementById("kbTile");
+  tile.addEventListener("mouseenter", function(){ tile.classList.remove("off"); });
+  tile.addEventListener("mouseleave", function(){ tile.classList.add("off"); });
+  tile.classList.add("off");
+  tile.addEventListener("click", function(){ tile.classList.toggle("off"); });
+
+  /* ---------- переключатель стилей: ссылка в демо ---------- */
+  document.querySelectorAll("[data-sw]").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("[data-sw]").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      try{ localStorage.setItem("notchdeck-demo-theme", b.getAttribute("data-sw")); }catch(e){}
+    });
+  });
+})();
+</script>
+</body>
+</html>
