@@ -45,7 +45,14 @@ curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scrip
 brew install --cask systemAdmin-ai/notchdeck/notchdeck
 ```
 
-Homebrew сам снимает карантин и обновляет приложение командой `brew upgrade`.
+Приложение подписано ad-hoc, поэтому перед первым запуском снимите карантин один раз
+(или установите с флагом `--no-quarantine`). Обновление — командой `brew upgrade`:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/NotchDeck.app"
+# или
+brew install --cask --no-quarantine systemAdmin-ai/notchdeck/notchdeck
+```
 
 **Вручную через DMG:**
 

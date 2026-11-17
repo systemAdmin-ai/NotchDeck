@@ -50,7 +50,14 @@ The script downloads the archive, verifies its SHA256 against the published `SHA
 brew install --cask systemAdmin-ai/notchdeck/notchdeck
 ```
 
-Homebrew clears the quarantine flag itself and updates with `brew upgrade`.
+The app is ad-hoc signed, so clear the quarantine flag once before the first launch
+(or install with `--no-quarantine`). Updates come with `brew upgrade`:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/NotchDeck.app"
+# or
+brew install --cask --no-quarantine systemAdmin-ai/notchdeck/notchdeck
+```
 
 **Or manually with the DMG:**
 
