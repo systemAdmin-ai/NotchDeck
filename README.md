@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14+">
   <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
-  <img src="https://img.shields.io/badge/release-2.0.1-63e6d2" alt="Preview 2.0.1">
+  <img src="https://img.shields.io/badge/release-2.1.0-63e6d2" alt="Preview 2.1.0">
   <a href="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml"><img src="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml/badge.svg" alt="Build and tests"></a>
 </p>
 
@@ -32,7 +32,7 @@ Version 2 adds profile duplication/renaming, independent app and button layouts,
 
 The keyboard button toggles Alt+Shift language switching and maps left Ctrl to Command on external USB/Bluetooth keyboards. Automatic mode enables it when an external keyboard connects. Manual off persists across reconnects and restarts. Green indicates a verified active mapping; amber indicates an exception or a setup conflict.
 
-Open **Settings → Windows keyboard** for automatic mode and Input Monitoring permission. Close standalone DeskBridge before enabling this mode. The built-in keyboard and right Ctrl retain their normal behavior; terminals and remote sessions are excluded from Ctrl replacement. This feature is available in the development build, not the linked 2.0.1 release. See the [specification](docs/specs/KEYBOARD-MODE.md).
+Open **Settings → Windows keyboard** for automatic mode and Input Monitoring permission. Close standalone DeskBridge before enabling this mode. The built-in keyboard and right Ctrl retain their normal behavior; terminals and remote sessions are excluded from Ctrl replacement. This feature is available in the development build, not the linked 2.0.1 release, which predates it. See the [specification](docs/specs/KEYBOARD-MODE.md).
 
 ## Install
 

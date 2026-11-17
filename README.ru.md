@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14+">
   <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
-  <img src="https://img.shields.io/badge/Preview-2.0.1-63e6d2" alt="Preview 2.0.1">
+  <img src="https://img.shields.io/badge/Preview-2.1.0-63e6d2" alt="Preview 2.1.0">
   <a href="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml"><img src="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml/badge.svg" alt="Build and tests"></a>
 </p>
 
