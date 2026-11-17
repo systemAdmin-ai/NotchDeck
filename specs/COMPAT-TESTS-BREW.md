@@ -65,8 +65,9 @@ README (EN/RU), `docs/index.html`, `Preferences.swift`, `docs/GETTING_STARTED*`
 остаётся, но формулируется как «протестировано на macOS 27; сборка
 поддерживает macOS 14+».
 
-**Критерий приёмки:** `grep -rn "macOS 26+" README.md README.ru.md docs/index.html`
-не находит совпадений; в бейджах обоих README — `macOS-14%2B`.
+**Критерий приёмки:** в README и docs нет требования «macOS 26+» как системного
+требования (упоминание SDK macOS 26+ в инструкции сборки допустимо); в бейджах
+обоих README — `macOS-14%2B`.
 
 ## Вне области
 
