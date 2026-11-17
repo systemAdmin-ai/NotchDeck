@@ -25,7 +25,7 @@ struct ProfileLayout:Codable,Equatable {
         return result
     }
     static func preset(visible:[Item],style:PanelStyle,applications:[AppShortcut]=[])->Self {
-        Self(hidden:Item.allCases.filter {!visible.contains($0)}.map(\.rawValue),order:Item.allCases.map(\.rawValue),applications:applications,style:style.rawValue,compact:true,autoPlayer:true).normalized()
+        Self(hidden:Item.allCases.filter {!(visible + [.keyboardBridge]).contains($0)}.map(\.rawValue),order:Item.allCases.map(\.rawValue),applications:applications,style:style.rawValue,compact:true,autoPlayer:true).normalized()
     }
     func apply(_ defaults:UserDefaults) {
         defaults.set(hidden,forKey:"NotchDeck.hiddenItems");defaults.set(order,forKey:"NotchDeck.order")

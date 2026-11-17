@@ -6,6 +6,10 @@ enum CLI {
     static func run(_ args: [String]) {
         let cmd = args[1]
         switch cmd {
+        case "--test-keyboard-mode":
+            KeyboardModeChecks.run()
+        case "--keyboard-settings":
+            DistributedNotificationCenter.default().postNotificationName(AppIdentity.notification("keyboard-settings"),object:nil,userInfo:nil,deliverImmediately:true)
         case "--test-profiles":
             ProfileChecks.run()
         case "--profiles":
@@ -435,6 +439,7 @@ func notchStatusMenu(target: AnyObject) -> NSMenu {
     _ = add(L("Показать панель"), #selector(AppDelegate.showPanel))
     _ = add(L("Профили панели…"), #selector(AppDelegate.profiles))
     _ = add(L("Быстрые заметки"), #selector(AppDelegate.notes))
+    _ = add(L("Клавиатура Windows…"), #selector(AppDelegate.keyboardSettings))
     _ = add(L("Быстрый тест чёлки"), #selector(AppDelegate.demo))
     _ = add(L("Настройки…"), #selector(AppDelegate.openSettings), ",")
     _ = add(L("Знакомство с NotchDeck…"), #selector(AppDelegate.onboarding))
@@ -454,6 +459,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let url=Bundle.main.url(forResource:"AppIcon",withExtension:"icns"),let icon=NSImage(contentsOf:url) {NSApp.applicationIconImage=icon}
         buildStatusItem()
         deck.start()
+        KeyboardMode.shared.start()
+        DistributedNotificationCenter.default().addObserver(forName: AppIdentity.notification("keyboard-settings"),object:nil,queue:.main) { _ in KeyboardMode.shared.showSettings() }
         Onboarding.shared.onShowPanel = { [weak self] in self?.deck.expand() }
         Onboarding.shared.onDemo = { [weak self] in self?.deck.runQuickDemo() }
         DispatchQueue.main.async {Onboarding.shared.showIfNeeded()}
@@ -468,7 +475,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSLog("NotchDeck started pid=\(ProcessInfo.processInfo.processIdentifier) rss=\(Self.rssMB()) MB")
     }
 
-    func applicationWillTerminate(_ notification:Notification) {Capture.stopRecording();QuickNotes.shared.save();SystemMediaStream.shared.stop()}
+    func applicationWillTerminate(_ notification:Notification) {KeyboardMode.shared.stop();Capture.stopRecording();QuickNotes.shared.save();SystemMediaStream.shared.stop()}
 
     private static func rssMB() -> Int {
         var info = mach_task_basic_info()
@@ -497,6 +504,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
     }
 
+    @objc func keyboardSettings() { KeyboardMode.shared.showSettings() }
     @objc func profiles() {ProfileManager.shared.show()}
     @objc func onboarding() {Onboarding.shared.show()}
     @objc func showPanel() { deck.expand() }

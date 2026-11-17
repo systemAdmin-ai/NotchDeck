@@ -341,6 +341,8 @@ final class ActionView: PressableView {
     private let icon: NSImageView
     private let recordingTime = label("", size: 7, color: PanelPalette.foreground)
     private var recordingObserver: NSObjectProtocol?
+    private var keyboardObserver: NSObjectProtocol?
+    private var keyboardEditing = false
 
     init(item: Item) {
         self.item = item
@@ -359,13 +361,38 @@ final class ActionView: PressableView {
             updateRecording()
         }
         if item != .record {toolTip=item.title}
+        if item == .keyboardBridge {
+            setAccessibilityElement(true); setAccessibilityRole(.button)
+            keyboardObserver = NotificationCenter.default.addObserver(forName: KeyboardMode.didChange, object: nil, queue: .main) { [weak self] _ in self?.updateKeyboard() }
+            updateKeyboard()
+        }
         if item == .recordMic {toolTip=L("Микрофон записи: %@", Capture.microphoneEnabled ? L("вкл") : L("выкл")) + L(" · переключается перед записью")}
         if item == .recordAudio {toolTip=L("Системный звук записи: %@", Capture.systemAudioEnabled ? L("вкл") : L("выкл")) + L(" · переключается перед записью")}
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    deinit {if let recordingObserver {NotificationCenter.default.removeObserver(recordingObserver)}}
+    deinit {
+        if let recordingObserver {NotificationCenter.default.removeObserver(recordingObserver)}
+        if let keyboardObserver {NotificationCenter.default.removeObserver(keyboardObserver)}
+    }
+    func updateKeyboard(state override: KeyboardModeState? = nil) {
+        guard item == .keyboardBridge else { return }
+        let mode = KeyboardMode.shared
+        let state = override ?? mode.state
+        let active = state == .active && !keyboardEditing
+        let warning = (state == .permission || state == .conflict || state == .suspended) && !keyboardEditing
+        icon.image = NSImage(systemSymbolName: active ? "keyboard.fill" : "keyboard", accessibilityDescription: L("Клавиатура Windows"))
+        icon.contentTintColor = active ? .systemGreen : (warning ? .systemOrange : PanelPalette.foreground)
+        layer?.backgroundColor = active ? NSColor.systemGreen.withAlphaComponent(0.22).cgColor : PanelPalette.gray(1,alpha:keyboardEditing ? 0.05 : 0.09).cgColor
+        layer?.borderWidth = active ? 1 : 0
+        layer?.borderColor = NSColor.systemGreen.withAlphaComponent(0.5).cgColor
+        layer?.shadowColor = NSColor.systemGreen.cgColor
+        layer?.shadowRadius = 5; layer?.shadowOpacity = active ? 0.3 : 0
+        toolTip = mode.tooltip
+        setAccessibilityLabel(L("Клавиатура Windows"))
+        setAccessibilityValue(state == .active ? L("Включено") : (state == .off ? L("Выключено") : mode.status))
+    }
     func updateRecording() {
         guard item == .record else{return}
         let active=Capture.isRecording
@@ -381,6 +408,7 @@ final class ActionView: PressableView {
     }
 
     func setEditing(_ editing: Bool) {
+        if item == .keyboardBridge { keyboardEditing = editing; updateKeyboard(); return }
         if item == .record {updateRecording();return}
         let enabled=(item == .recordMic && Capture.microphoneEnabled) || (item == .recordAudio && Capture.systemAudioEnabled)
         layer?.backgroundColor = enabled && !editing ? NSColor(srgbRed:0.12,green:0.45,blue:0.34,alpha:0.6).cgColor:NSColor(white: 1, alpha: editing ? 0.05 : 0.09).cgColor

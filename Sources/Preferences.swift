@@ -108,7 +108,7 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
     private func buildTabs() {
         while tabs.numberOfTabViewItems > 0 { tabs.removeTabViewItem(tabs.tabViewItem(at:0)) }
         controls.removeAll();appList=nil;stylePreview=nil;styleDescription=nil
-        makeGeneral(); makeApplications(); makeButtons(); makeAppearance(); makeBehavior(); makeAlerts()
+        makeGeneral(); makeKeyboard(); makeApplications(); makeButtons(); makeAppearance(); makeBehavior(); makeAlerts()
     }
     private func tab(_ name:String)->NSView {
         let item=NSTabViewItem(identifier:name);item.label=name
@@ -148,6 +148,12 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
     @objc private func languageChanged(_ sender:NSPopUpButton) {
         guard let raw=sender.selectedItem?.representedObject as? String,let language=AppLanguage(rawValue:raw) else{return}
         L10n.shared.set(language)
+    }
+    private func makeKeyboard() {
+        let item = NSTabViewItem(identifier: "keyboard")
+        item.label = L("Клавиатура")
+        item.view = KeyboardModeSettingsView(frame: NSRect(x:0,y:0,width:560,height:450))
+        tabs.addTabViewItem(item)
     }
     // MARK: - Приложения
     private func makeApplications() {

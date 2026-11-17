@@ -300,3 +300,26 @@
 "Знакомство с NotchDeck…" = "Getting started…";
 
 "Завершить NotchDeck" = "Quit NotchDeck";
+
+/* Keyboard mode */
+"Клавиатура Windows" = "Windows keyboard";
+"Клавиатура Windows…" = "Windows keyboard…";
+"Клавиатура" = "Keyboard";
+"Клавиатура: выключено вручную" = "Keyboard: manually disabled";
+"Клавиатура: ожидание внешнего устройства" = "Keyboard: waiting for an external device";
+"Клавиатура: нужен доступ к мониторингу ввода" = "Keyboard: Input Monitoring permission required";
+"Закройте DeskBridge, чтобы включить режим в NotchDeck" = "Quit DeskBridge to enable keyboard mode in NotchDeck";
+"Клавиатура: переназначение не применено; проверьте настройки" = "Keyboard: remapping not applied; check settings";
+"Клавиатура: Alt+Shift включён, Ctrl сохранён для текущего приложения" = "Keyboard: Alt+Shift enabled, native Ctrl preserved for this app";
+"Клавиатура: Alt+Shift и Ctrl-сочетания включены" = "Keyboard: Alt+Shift and Ctrl shortcuts enabled";
+"Нажмите, чтобы выключить" = "Click to turn off";
+"Нажмите, чтобы включить или открыть настройки" = "Click to turn on or open settings";
+"Автовключение при подключении внешней клавиатуры" = "Enable automatically when an external keyboard connects";
+"Alt+Shift и левый Ctrl как Command" = "Alt+Shift and left Ctrl as Command";
+"Разрешить мониторинг ввода…" = "Allow Input Monitoring…";
+"Подключено: %@" = "Connected: %@";
+"Внешняя клавиатура не обнаружена" = "No external keyboard detected";
+"Встроенная клавиатура не меняется. Ручное выключение сохраняется; включите режим кнопкой или повторно выберите авторежим. Правый Ctrl остаётся Control. Терминалы и удалённые сессии исключены из замены Ctrl." = "The built-in keyboard is unchanged. Manual off persists; toggle the button or reset automatic mode to enable it. Right Ctrl remains Control. Terminals and remote sessions are excluded from Ctrl remapping.";
+
+"Включено" = "On";
+"Выключено" = "Off";

@@ -7,7 +7,7 @@ enum Item: String, CaseIterable, Identifiable {
     // питание
     case sleep, lockScreen, mediaToggle, volumeMute, downloads, preferences
     // инструменты
-    case clipboard, screenshot, record, shelf, quickNote, recordMic, recordAudio
+    case clipboard, screenshot, record, shelf, quickNote, recordMic, recordAudio, keyboardBridge
     // запуск приложений
 
     var id: String { rawValue }
@@ -46,6 +46,7 @@ enum Item: String, CaseIterable, Identifiable {
         case .ip: return "IP"
         case .happStatus:return "Happ"
         case .checkpointStatus:return "Check Point"
+        case .keyboardBridge:return L("Клавиатура Windows")
         case .quickNote:return L("Заметки")
         case .recordMic:return L("Микрофон записи")
         case .recordAudio:return L("Звук записи")
@@ -74,6 +75,7 @@ enum Item: String, CaseIterable, Identifiable {
         case .ip: return "globe"
         case .happStatus:return "shield.lefthalf.filled"
         case .checkpointStatus:return "lock.shield"
+        case .keyboardBridge:return "keyboard"
         case .quickNote:return "note.text"
         case .recordMic:return Capture.microphoneEnabled ? "mic.fill":"mic.slash.fill"
         case .recordAudio:return Capture.systemAudioEnabled ? "speaker.wave.2.fill":"speaker.slash.fill"

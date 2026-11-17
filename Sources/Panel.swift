@@ -115,6 +115,7 @@ final class PanelModel {
         } else {
             switch item {
             case .sleep: Power.sleepDisplay()
+            case .keyboardBridge:KeyboardMode.shared.toggle()
             case .quickNote:QuickNotes.shared.show()
             case .recordMic:Capture.toggleMicrophone()
             case .recordAudio:Capture.toggleSystemAudio()

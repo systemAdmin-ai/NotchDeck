@@ -20,7 +20,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleExecutable</key><string>NotchDeck</string>
   <key>CFBundleIdentifier</key><string>com.notchdeck.app</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>2.0.1</string>
+  <key>CFBundleShortVersionString</key><string>2.1.0</string>
   <key>CFBundleVersion</key><string>220</string>
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>CFBundleIconFile</key><string>AppIcon.icns</string>
@@ -29,6 +29,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleLocalizations</key><array><string>en</string><string>ru</string></array>
   <key>LSUIElement</key><true/>
   <key>NSAppleEventsUsageDescription</key><string>NotchDeck показывает, что играет, и переключает треки.</string>
+  <key>NSInputMonitoringUsageDescription</key><string>NotchDeck detects Alt+Shift on selected external keyboards. Typed text is not stored.</string>
   <key>NSMicrophoneUsageDescription</key><string>Микрофон включается только кнопкой микрофона для записи экрана с вашим голосом.</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSSupportsAutomaticTermination</key><false/>
@@ -47,11 +48,11 @@ if [ -n "${APP_NAME:-}" ]; then
 fi
 
 swiftc -target arm64-apple-macos26.0 -swift-version 5 -O -o "$BIN" \
-  Sources/L10n.swift Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
+  Sources/Keyboard/*.swift Sources/L10n.swift Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
   Sources/NowPlaying.swift Sources/Tools.swift Sources/Procs.swift Sources/Keys.swift \
   Sources/ToolPanels.swift Sources/ProcPanel.swift \
   Sources/Profiles.swift Sources/ProfileChecks.swift Sources/Onboarding.swift Sources/ScreenRecording.swift Sources/PowerEvents.swift Sources/Connections.swift Sources/Notes.swift Sources/Checks.swift Sources/Preferences.swift Sources/SystemMedia.swift Sources/HUDMotion.swift Sources/NotchHUD.swift Sources/Cleanup.swift Sources/Views.swift Sources/Panel.swift Sources/main.swift \
-  -framework AppKit -framework CoreAudio -framework IOKit \
+  -framework AppKit -framework CoreAudio -framework IOKit -framework Carbon \
   -framework AVFoundation -framework SystemConfiguration -framework ImageIO -framework ServiceManagement -framework CoreGraphics 2>&1 | tail -40
 
 # System-wide media metadata helper, BSD-3-Clause.

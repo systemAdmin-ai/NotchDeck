@@ -9,3 +9,10 @@ Upstream: https://github.com/ungive/mediaremote-adapter
 
 App artwork was generated for NotchDeck. SF Symbols and macOS system frameworks
 are provided by the operating system and are not redistributed as standalone assets.
+
+Keyboard mode adapts the native HID/TIS/UserKeyMapping implementation from
+DeskBridge, copyright 2026 systemAdmin-ai, MIT licensed. The original license is
+preserved in docs/LICENSE-DeskBridge.txt. No DeskBridge process, Karabiner runtime
+or third-party keyboard driver is bundled.
+
+Source: https://github.com/systemAdmin-ai/DeskBridge

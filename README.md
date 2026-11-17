@@ -14,6 +14,12 @@ English and Russian: choose the language on the first onboarding screen or in
 
 Version 2 adds profile duplication/renaming, independent app and button layouts, light/dark/automatic materials, a subtle low-battery pulse, and backdrop-aware neon when screen permission is available. Auto material follows the macOS theme; halo adaptation samples only a narrow strip in memory.
 
+## Keyboard mode (2.1 development preview)
+
+The keyboard button toggles Alt+Shift language switching and maps left Ctrl to Command on external USB/Bluetooth keyboards. Automatic mode enables it when an external keyboard connects. Manual off persists across reconnects and restarts. Green indicates a verified active mapping; amber indicates an exception or a setup conflict.
+
+Open **Settings → Windows keyboard** for automatic mode and Input Monitoring permission. Close standalone DeskBridge before enabling this mode. The built-in keyboard and right Ctrl retain their normal behavior; terminals and remote sessions are excluded from Ctrl replacement. This feature is available in the development build, not the linked 2.0.1 release. See the [specification](docs/specs/KEYBOARD-MODE.md).
+
 ## Install
 
 **One command** (recommended — skips the "app can't be checked" dialog):
