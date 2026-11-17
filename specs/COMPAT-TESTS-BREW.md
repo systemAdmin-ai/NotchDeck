@@ -37,9 +37,14 @@ Apple Silicon, тесты существуют только как флаги б
 `--test-*` режимы, а также `scripts/check_bundle.py`. В `README.md` и
 `README.ru.md` — бейдж статуса сборки.
 
-**Критерий приёмки:** в GitHub Actions появляются две задачи — `build` и `tests`;
-обе зелёные на коммите; в README бейдж ведёт на `/actions/workflows/build.yml`;
-`./scripts/check.sh` локально возвращает 0.
+**Критерий приёмки:** в GitHub Actions появляются две задачи — `Tests` и `Package`;
+обе зелёные на коммите; в README бейдж ведёт на `/actions/workflows/build.yml`
+и показывает `passing`; `./scripts/check.sh` локально возвращает 0.
+
+**Факт проверки (17.11.2026):** прогон `56fa1df` — `Tests: success` (13 шагов,
+включая `Bundle checks`, `Keyboard mode`, `Profiles`, `Requirements R39`,
+`Key routing`, `Halo`, `HUD lifecycle`, `Signature`), `Package: success`;
+бейдж `build.yml/badge.svg` содержит `passing`.
 
 ## R4. Установка через Homebrew
 
@@ -85,3 +90,10 @@ README (EN/RU), `docs/index.html`, `Preferences.swift`, `docs/GETTING_STARTED*`
 2. Тесты остаются исполняемыми режимами бинарника, а не XCTest-таргетом:
    перевод на `swift test` требует переезда сборки на SwiftPM, что меняет
    `build.sh` и CI. Отложено до отдельного решения.
+
+## Ограничение проверки
+
+Запуск проверен на macOS 27. Реального запуска на macOS 14–25 в этой среде нет:
+подтверждены только `minos 14.0` в бинарнике и фреймворке, успешная компиляция
+с `-target arm64-apple-macos14.0` и прохождение всех самотестов. Ветка
+`NSVisualEffectView` для систем без Liquid Glass не проверена на живой системе.
