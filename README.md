@@ -1,10 +1,23 @@
-<p align="center"><img src="Assets/Logo.png" width="112" alt="NotchDeck"></p>
-<h1 align="center">NotchDeck</h1>
-<p align="center">A compact control center around your MacBook notch.</p>
+<p align="center">
+  <a href="https://systemAdmin-ai.github.io/NotchDeck/">
+    <img src="docs/assets/hero-en.png" alt="NotchDeck — a compact control center around your MacBook notch">
+  </a>
+</p>
 
-**Apple Silicon · macOS 26+ · MIT · Preview 2.0.1**
+<p align="center">
+  <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
+  <img src="https://img.shields.io/badge/macOS-26%2B-000000?logo=apple&logoColor=white" alt="macOS 26+">
+  <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
+  <img src="https://img.shields.io/badge/release-2.0.1-63e6d2" alt="Preview 2.0.1">
+</p>
 
-[Download DMG](https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg) · [Documentation](https://systemAdmin-ai.github.io/NotchDeck/) · [Interactive demo](https://systemAdmin-ai.github.io/NotchDeck/demo.html) · [Русский](README.ru.md)
+<p align="center">
+  <a href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg"><img src="https://img.shields.io/badge/Download-DMG-3ddc97?style=for-the-badge&logo=apple&logoColor=white" alt="Download DMG"></a>
+  <a href="https://systemAdmin-ai.github.io/NotchDeck/"><img src="https://img.shields.io/badge/Documentation-0b0e14?style=for-the-badge&logo=gitbook&logoColor=63e6d2" alt="Documentation"></a>
+  <a href="https://systemAdmin-ai.github.io/NotchDeck/demo.html"><img src="https://img.shields.io/badge/Interactive_demo-0b0e14?style=for-the-badge&logo=html5&logoColor=63e6d2" alt="Interactive demo"></a>
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/Русский-0b0e14?style=for-the-badge" alt="Русский"></a>
+</p>
+
 
 Hover over the notch for system metrics, app shortcuts, quick notes and screen
 recording. Features include task profiles, eight themes, brightness/volume glow, charging animation,

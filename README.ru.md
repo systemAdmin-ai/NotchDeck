@@ -1,8 +1,22 @@
-<p align="center"><img src="Assets/Logo.png" width="112" alt="NotchDeck icon"></p>
-<h1 align="center">NotchDeck</h1>
-<p align="center">Чёлка MacBook как компактный центр управления.</p>
-<p align="center"><b>macOS 26+ · Apple Silicon · Бесплатно · MIT</b></p>
-<p align="center"><a href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg">Скачать DMG</a> · <a href="https://systemAdmin-ai.github.io/NotchDeck/">Документация</a> · <a href="https://systemAdmin-ai.github.io/NotchDeck/demo.html">Интерактивное демо</a> · <a href="docs/GETTING_STARTED.ru.md">Начало работы</a> · <a href="PRIVACY.ru.md">Конфиденциальность</a> · <a href="README.md">English</a></p>
+<p align="center">
+  <a href="https://systemAdmin-ai.github.io/NotchDeck/">
+    <img src="docs/assets/hero-ru.png" alt="NotchDeck — компактный центр управления вокруг чёлки MacBook">
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
+  <img src="https://img.shields.io/badge/macOS-26%2B-000000?logo=apple&logoColor=white" alt="macOS 26+">
+  <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
+  <img src="https://img.shields.io/badge/Preview-2.0.1-63e6d2" alt="Preview 2.0.1">
+</p>
+
+<p align="center">
+  <a href="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download/NotchDeck.dmg"><img src="https://img.shields.io/badge/%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C-DMG-3ddc97?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать DMG"></a>
+  <a href="https://systemAdmin-ai.github.io/NotchDeck/"><img src="https://img.shields.io/badge/%D0%94%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F-0b0e14?style=for-the-badge&logo=gitbook&logoColor=63e6d2" alt="Документация"></a>
+  <a href="https://systemAdmin-ai.github.io/NotchDeck/demo.html"><img src="https://img.shields.io/badge/%D0%98%D0%BD%D1%82%D0%B5%D1%80%D0%B0%D0%BA%D1%82%D0%B8%D0%B2%D0%BD%D0%BE%D0%B5_%D0%B4%D0%B5%D0%BC%D0%BE-0b0e14?style=for-the-badge&logo=html5&logoColor=63e6d2" alt="Интерактивное демо"></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/English-0b0e14?style=for-the-badge" alt="English"></a>
+</p>
 
 > **Preview 2.0.1.** Приложение ещё развивается. Сборка проверена на macOS 27,
 > Apple Silicon. Intel и версии macOS ниже 26 не поддерживаются этим релизом.
