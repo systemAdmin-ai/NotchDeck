@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import ScreenCaptureKit
+import CoreImage
 
 // Only the narrow strip behind the halo is sampled, in memory, with existing permission.
 // Excluding this process prevents the glow from feeding back into its own brightness.
@@ -9,17 +10,34 @@ private final class HaloBackdrop {
     private var busy=false
     private var requested=Double(-100)
     private var values=[Double]()
+    private var columns=[Double]()
     private let w=256,h=24
     static func gain(_ brightness:Double)->Double {1+0.70*max(0,min(1,brightness))}
     var sampleCount:Int {values.count}
     var sampleRange:String {"\(values.min() ?? 0)...\(values.max() ?? 0)"}
+    static func smoothedColumns(_ values:[Double],width:Int,height:Int)->[Double] {
+        guard values.count==width*height,width>0,height>0 else{return []}
+        let means=(0..<width).map {x in (0..<height).reduce(0.0) {$0+values[$1*width+x]}/Double(height)}
+        return (0..<width).map {x in
+            var sum=0.0,weight=0.0
+            for offset in -9...9 {
+                let k=exp(-Double(offset*offset)/18)
+                sum+=means[max(0,min(width-1,x+offset))]*k;weight+=k
+            }
+            return sum/weight
+        }
+    }
     func brightness(x:Double,y:Double)->Double {
-        guard values.count == w*h else{return 0}
-        let fx=max(0,min(Double(w-1),x*Double(w-1))),fy=max(0,min(Double(h-1),y*Double(h-1)))
-        let x0=Int(fx),y0=Int(fy),x1=min(w-1,x0+1),y1=min(h-1,y0+1)
-        let a=fx-Double(x0),b=fy-Double(y0)
-        return (values[y0*w+x0]*(1-a)+values[y0*w+x1]*a)*(1-b)
-            + (values[y1*w+x0]*(1-a)+values[y1*w+x1]*a)*b
+        // One gain through the complete height of each contour column: the
+        // menu bar boundary must never become a brightness step in the halo.
+        guard columns.count==w else{return 0}
+        let fx=max(0,min(Double(w-1),x*Double(w-1)))
+        let i=Int(fx),j=min(w-1,i+1),a=fx-Double(i)
+        return columns[i]*(1-a)+columns[j]*a
+    }
+    func setRenderBackground() {
+        values=(0..<w*h).map {$0/w < h/2 ? 0:1}
+        columns=Self.smoothedColumns(values,width:w,height:h)
     }
     func refresh() {
         let now=ProcessInfo.processInfo.systemUptime
@@ -49,7 +67,8 @@ private final class HaloBackdrop {
                     next[i]=self.values.count == next.count ? self.values[i]*0.65+luma*0.35:luma
                 }
                 self.values=next
-            } catch {self.values=[]}
+                self.columns=Self.smoothedColumns(next,width:self.w,height:self.h)
+            } catch {self.values=[];self.columns=[]}
         }
     }
 }
@@ -263,6 +282,9 @@ final class NotchHUD {
         precondition(HaloBackdrop.gain(-1)==1 && abs(HaloBackdrop.gain(2)-1.7)<0.0001)
         let sampler=HaloBackdrop.shared
         precondition(sampler.brightness(x:0.5,y:0.5)==0)
+        let split=(0..<64).map {$0/8<4 ? 0.0:1.0}
+        let smooth=HaloBackdrop.smoothedColumns(split,width:8,height:8)
+        precondition(smooth.count==8 && smooth.allSatisfy {abs($0-0.5)<0.00001},"Black/white boundary changes halo gain")
         if CGPreflightScreenCaptureAccess() {
             sampler.refresh()
             let deadline=Date().addingTimeInterval(5)
@@ -326,6 +348,7 @@ final class NotchHUD {
     static func renderSample(to path: String, kind: LevelKind, value: Float, muted: Bool = false) -> Bool {
         _ = NSApplication.shared
         let f = overlayFrame()
+        if ProcessInfo.processInfo.arguments.contains("--contrast-sample") {HaloBackdrop.shared.setRenderBackground()}
         let v = IslandView(frame: CGRect(origin: .zero, size: f.size))
         v.set(kind: kind, value: value, muted: muted, animated: false)
         guard let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) else { return false }
@@ -419,6 +442,9 @@ final class IslandView: NSView {
         warning == .battery && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
     private var warning: NotchAlert?
+    private static let haloContext=CIContext(options:[.cacheIntermediates:false])
+    private var haloMaskKey=""
+    private var haloMask=[Float]()
     private var charging=false
     private var chargeStarted=ProcessInfo.processInfo.systemUptime
     private var progress: CGFloat = 0
@@ -529,10 +555,10 @@ final class IslandView: NSView {
         let width = g.notchWidth + (NotchHUD.islandFrame().width - g.notchWidth) * expansion
         let height = g.notchHeight + NotchHUD.extraHeight * expansion
         let plate = CGRect(x: center - width/2, y: 0, width: width, height: height)
-        let radius: CGFloat = 11
+        let radius: CGFloat = 14
         let cornerControl = radius * 0.5522847498
         let shape = NSBezierPath()
-        let ear:CGFloat=10
+        let ear:CGFloat=14
         let earControl=ear*0.5522847498
         shape.move(to: NSPoint(x: plate.minX-ear, y: 0))
         shape.line(to: NSPoint(x: plate.maxX+ear, y: 0))
@@ -559,7 +585,7 @@ final class IslandView: NSView {
         let halfLength = maximumHalfLength * animationProgress * expansion
         if halfLength > 0.2 {
             drawHalo(center: center, width: width, height: height,
-                     halfLength: halfLength, opacity: expansion)
+                     halfLength: halfLength, opacity: expansion, outline: shape)
             // Keep the camera and wings completely black; light spills outwards only.
             NSColor.black.setFill()
             shape.fill()
@@ -573,7 +599,7 @@ final class IslandView: NSView {
     // Rasterize the smooth field once per frame. Computing opacity directly avoids
     // accumulating dozens of 8-bit gradient layers, which introduces visible grain.
     private func drawHalo(center: CGFloat, width: CGFloat, height: CGFloat,
-                          halfLength: CGFloat, opacity: CGFloat) {
+                          halfLength: CGFloat, opacity: CGFloat, outline:NSBezierPath) {
         let scale = window?.backingScaleFactor ?? Geometry.measure().screen.backingScaleFactor
         let pixelsWide = Int(ceil(bounds.width*scale)), pixelsHigh = Int(ceil(bounds.height*scale))
         // Linear floating-point pixels avoid repeated 8-bit alpha quantization.
@@ -584,7 +610,44 @@ final class IslandView: NSView {
                   bytesPerRow:pixelsWide*16,space:space,bitmapInfo:info),let data=raster.data else{return}
         memset(data,0,pixelsWide*pixelsHigh*16)
         let pixels=data.bindMemory(to:Float.self,capacity:pixelsWide*pixelsHigh*4)
-        let half = Double(width/2), h = Double(height), radius = 11.0, ear = 10.0
+        // Blur the exact silhouette used above, rather than piecing together
+        // independent distance fields whose bisectors create visible sharp seams.
+        let padding=32*scale
+        let key="\(pixelsWide):\(pixelsHigh):\(Int((width*scale*10).rounded())):\(Int((height*scale*10).rounded())):\(center)"
+        if haloMaskKey != key {
+            let maskHeight=pixelsHigh+Int(padding)
+            guard let mask=CGContext(data:nil,width:pixelsWide,height:maskHeight,bitsPerComponent:8,
+                bytesPerRow:pixelsWide*4,space:CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue) else{return}
+            mask.translateBy(x:0,y:CGFloat(maskHeight)-padding)
+            mask.scaleBy(x:scale,y:-scale)
+            let contour=CGMutablePath()
+            contour.move(to:CGPoint(x:bounds.width,y:0))
+            contour.addLine(to:CGPoint(x:center+width/2+14,y:0))
+            var elementIndex=0
+            outline.cgPath.applyWithBlock {pointer in
+                defer {elementIndex+=1}
+                guard elementIndex>=2 else{return}
+                let element=pointer.pointee
+                switch element.type {
+                case .addLineToPoint:contour.addLine(to:element.points[0])
+                case .addCurveToPoint:contour.addCurve(to:element.points[2],control1:element.points[0],control2:element.points[1])
+                case .addQuadCurveToPoint:contour.addQuadCurve(to:element.points[1],control:element.points[0])
+                default:break
+                }
+            }
+            contour.addLine(to:CGPoint(x:0,y:0))
+            mask.addPath(contour)
+            mask.setStrokeColor(NSColor.white.cgColor);mask.setLineWidth(8)
+            mask.setLineCap(.round);mask.setLineJoin(.round);mask.strokePath()
+            guard let source=mask.makeImage() else{return}
+            let input=CIImage(cgImage:source)
+            let blurred=input.applyingFilter("CIGaussianBlur",parameters:[kCIInputRadiusKey:8.5*scale])
+            var values=[Float](repeating:0,count:pixelsWide*pixelsHigh*4)
+            Self.haloContext.render(blurred,toBitmap:&values,rowBytes:pixelsWide*16,
+                bounds:CGRect(x:0,y:0,width:pixelsWide,height:pixelsHigh),format:.RGBAf,colorSpace:space)
+            haloMask=values;haloMaskKey=key
+        }
         let extent = Double(halfLength)
         let first = max(0, Int((center-halfLength-1)*scale))
         let last = min(pixelsWide-1, Int((center+halfLength+1)*scale))
@@ -602,32 +665,17 @@ final class IslandView: NSView {
             let envelope = 1-t*t*(3-2*t)
             if envelope <= 0 { continue }
             for py in 0..<pixelsHigh {
-                let y = (Double(py)+0.5)/Double(scale)
-                var d: Double
-                if x > half+ear+28 { d = y }
-                else {
-                    // Nearest point on the right half of the same rounded edge.
-                    d = hypot(x-min(x,half-radius),y-h)
-                    let cx=x-(half-radius),cy=y-(h-radius)
-                    let corner = cx >= 0 && cy >= 0 ? abs(hypot(cx,cy)-radius)
-                        : min(hypot(cx,cy-radius),hypot(cx-radius,cy))
-                    d=min(d,corner)
-                    d = min(d, hypot(x-half,y-min(h-radius,max(ear,y))))
-                    let sx=x-(half+ear),sy=y-ear
-                    let shoulder = sx <= 0 && sy <= 0 ? abs(hypot(sx,sy)-ear)
-                        : min(hypot(sx+ear,sy),hypot(sx,sy+ear))
-                    d=min(d,shoulder)
-                    d = min(d,hypot(x-max(half+ear,x),y))
-                }
-                if d > 28 { continue }
+                let index = (py*pixelsWide+px)*4
+                let density=Double(haloMask[index+3])
+                if density<0.00001 {continue}
                 let backdrop=HaloBackdrop.shared.brightness(x:(Double(px)+0.5)/Double(pixelsWide),y:(Double(py)+0.5)/Double(pixelsHigh))
                 let contrastGain=HaloBackdrop.gain(backdrop)
-                let alpha = min(0.85,0.52*contrastGain*exp(-d*d/(2*8.5*8.5))*envelope*Double(opacity)*pulse*batteryOpacity)
-                let fringe = min(0.65,d/35)
+                let uniformDensity=0.30*tanh(density/0.30)
+                let alpha = min(0.75,1.8*uniformDensity*contrastGain*envelope*Double(opacity)*pulse*batteryOpacity)
+                let fringe = max(0,min(0.65,(1-density/0.36)*0.65))
                 let warm = kind == .brightness
                 let inner = charging ? (0.22,1.0,0.50) : (warning != nil ? (1.0,0.25,0.29) : (warm ? (1.0,0.79,0.56) : (0.55,0.79,1.0)))
                 let outer = charging ? (0.03,0.72,0.25) : (warning != nil ? (0.94,0.05,0.16) : (warm ? (0.94,0.45,0.48) : (0.40,0.47,0.98)))
-                let index = (py*pixelsWide+px)*4
                 pixels[index] = Float((inner.0*(1-fringe)+outer.0*fringe)*alpha)
                 pixels[index+1] = Float((inner.1*(1-fringe)+outer.1*fringe)*alpha)
                 pixels[index+2] = Float((inner.2*(1-fringe)+outer.2*fringe)*alpha)
