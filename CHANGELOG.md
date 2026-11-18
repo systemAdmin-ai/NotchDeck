@@ -1,3 +1,11 @@
+# Не выпущено
+
+- `scripts/setup-signing.sh` — создаёт локальный сертификат «NotchDeck Self-Signed» на любом Mac
+  без sudo и без Apple Developer ID. Нужен, чтобы сборка из исходников не получала ad-hoc подпись
+  и разрешение «Универсальный доступ» переживало пересборки. Повторный запуск безопасен, `--force`
+  пересоздаёт. `build.sh` берёт сертификат, если он есть, иначе подписывает ad-hoc и подсказывает команду.
+- `build.sh`: `SIGN_IDENTITY=-` явно выбирает ad-hoc подпись.
+
 # 2.1.1 · Neon survives sleep and updates
 
 - The media-key interceptor no longer dies silently. It now checks that its event tap is

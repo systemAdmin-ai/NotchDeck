@@ -50,7 +50,7 @@ The script downloads the archive, verifies its SHA256 against the published `SHA
 brew install --cask systemAdmin-ai/notchdeck/notchdeck
 ```
 
-The app is ad-hoc signed, so clear the quarantine flag once before the first launch
+The app is not Apple-notarized, so clear the quarantine flag once before the first launch
 (or install with `--no-quarantine`). Updates come with `brew upgrade`:
 
 ```bash
@@ -64,7 +64,7 @@ brew install --cask --no-quarantine systemAdmin-ai/notchdeck/notchdeck
 Download the Apple Silicon DMG, open it, and drag NotchDeck into Applications.
 Launch it from Applications and complete the four-step onboarding.
 
-This preview is ad-hoc signed, **not Developer ID signed or Apple notarized**.
+This preview is signed with a local certificate, **not Developer ID signed or Apple notarized**.
 macOS may block the first launch. Use the standard Privacy & Security flow only
 if you choose to trust the app; see [Apple's guidance](https://support.apple.com/en-us/102445).
 Do not disable Gatekeeper or SIP. Permission refresh may be needed after updates.
@@ -132,4 +132,16 @@ Install Xcode Command Line Tools with macOS 26+ SDK (the app itself targets macO
 ```
 
 The app is in `Build`, packages in `Dist`. Dependencies are included as source.
+
+**Create the local signing certificate once.** Without it the build is ad-hoc signed and macOS
+drops the Accessibility permission after every rebuild:
+
+```bash
+./scripts/setup-signing.sh
+```
+
+It creates a self-signed "NotchDeck Self-Signed" certificate (RSA-2048, 10 years, codeSigning EKU),
+imports it into your login keychain and trusts it for code signing only. No sudo, no password
+prompts, the private key never leaves your Mac. Re-grant Accessibility once after the first such
+build; later updates keep it. See [the spec](specs/2026-11-18-локальный-сертификат-для-любого-мака.md).
 Code is MIT; [third-party licenses](THIRD_PARTY_NOTICES.md) are preserved.

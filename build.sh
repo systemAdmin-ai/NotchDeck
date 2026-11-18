@@ -88,11 +88,18 @@ done
 # Подпись стабильным сертификатом: designated requirement привязан к сертификату, а не к
 # cdhash, поэтому разрешение «Универсальный доступ» переживает обновления (см. спеку
 # 2026-11-18-перехват-после-сна-и-подписи.md, R4).
-if [ -z "${SIGN_IDENTITY:-}" ]; then
+# SIGN_IDENTITY=- принудительно даёт ad-hoc: пустое значение тоже валидный выбор.
+if [ -z "${SIGN_IDENTITY+set}" ]; then
   SIGN_IDENTITY=$(security find-identity -v -p codesigning 2>/dev/null \
     | sed -n 's/.*"\(NotchDeck Self-Signed\)".*/\1/p' | head -1)
 fi
-codesign --force --sign "${SIGN_IDENTITY:--}" --timestamp=none "$APP"
+if [ -n "${SIGN_IDENTITY:-}" ] && [ "${SIGN_IDENTITY}" != "-" ]; then
+  codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$APP"
+else
+  codesign --force --sign - --timestamp=none "$APP"
+  echo "подпись ad-hoc: разрешение «Универсальный доступ» будет сбрасываться после каждой пересборки."
+  echo "стабильная подпись: scripts/setup-signing.sh (один раз), затем пересобрать."
+fi
 codesign --verify --deep --strict "$APP"
 echo "BUILD OK: $BIN"
 ls -lh "$BIN" | awk '{print "binary size: "$5}'
