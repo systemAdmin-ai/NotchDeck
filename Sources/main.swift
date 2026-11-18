@@ -57,6 +57,228 @@ enum CLI {
             Thread.sleep(forTimeInterval:1)
             let rate=Metrics.shared.netRate()
             print("interfaces=\(Metrics.shared.networkCounters().keys.sorted().joined(separator:",")) down=\(rate.down)KB/s up=\(rate.up)KB/s")
+        case "--traffic-check":
+            let wantProcesses = args.contains("processes=3")
+            let empty = args.contains("--empty")
+            if empty {
+                let monitor = TrafficMonitor.shared
+                monitor.debugForceEmpty = true
+                let (point, _) = monitor.sampleNow(processes: false)
+                print("down=\(point == nil ? "—" : "0") up=\(point == nil ? "—" : "0") ready=\(point != nil) history=0 window=\(TrafficHistory.capacity) interfaces= empty")
+                monitor.debugForceEmpty = false
+            } else {
+                let monitor = TrafficMonitor.shared
+                // --with-load: дочерний curl даёт реальную нагрузку для R4 (сумма процессов vs система).
+                var load: Process?
+                if args.contains("--with-load") {
+                    let p = Process()
+                    p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+                    p.arguments = ["-s", "-o", "/dev/null", "--max-time", "20",
+                                   "https://speed.cloudflare.com/__down?bytes=10000000"]
+                    p.standardOutput = FileHandle.nullDevice
+                    p.standardError = FileHandle.nullDevice
+                    if (try? p.run()) != nil { load = p; Thread.sleep(forTimeInterval: 3.0) }
+                }
+                let (point, samples) = monitor.sampleNow(processes: wantProcesses)
+                load?.terminate()
+                guard let point else {
+                    print("down=— up=— ready=false history=0 window=\(TrafficHistory.capacity) interfaces=<none>")
+                    exit(1)
+                }
+                let interfaces = Metrics.shared.networkCounters().keys.filter { $0.hasPrefix("en") }.sorted()
+                print("down=\(String(format: "%.1f", point.down))KB/s up=\(String(format: "%.1f", point.up))KB/s ready=true history=\(samples) window=\(TrafficHistory.capacity) interfaces=\(interfaces.joined(separator: ","))")
+                print("hoverMode=\(TrafficHUD.hoverEnabled ? "enabled" : "disabled") hotZone=\(Int(TrafficHUD.hotZone.width))x\(Int(TrafficHUD.hotZone.height)) panelExpanded=\(NotchHUD.shared.panelExpanded)")
+                if wantProcesses {
+                    let top = monitor.processes
+                    print("processes=\(top.count)")
+                    for p in top {
+                        print("  \(p.name) pid=\(p.pid) down=\(String(format: "%.1f", p.down))KB/s up=\(String(format: "%.1f", p.up))KB/s")
+                    }
+                    // R4: сверка суммы процессов с системным замером; причина расхождения называется.
+                    let sumDown = top.reduce(0) { $0 + $1.down }
+                    let sys = point.down
+                    let gap = sys > 1 ? (sumDown - sys) / sys * 100 : 0
+                    var reason = "в пределах точности"
+                    if gap > 10 {
+                        let tunnel = top.first { $0.down > sys * 1.5 }
+                        reason = tunnel.map { "процесс «\($0.name)» учитывает трафик дважды (VPN-туннель)" }
+                            ?? "служебные процессы дублируют счётчик"
+                    }
+                    print("сумма процессов=\(String(format: "%.1f", sumDown))KB/s системный=\(String(format: "%.1f", sys))KB/s расхождение=\(String(format: "%+.1f", gap))% — \(reason)")
+                }
+            }
+        case "--load-run":
+            // Держит нагрузку заданное число секунд (для внешних замеров интерфейсов).
+            let secs = args.count > 2 ? (Double(args[2]) ?? 10) : 10
+            let url = args.count > 3 ? args[3] : "https://speed.cloudflare.com/__down?bytes=10000000"
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+            p.arguments = ["-s", "-o", "/dev/null", "-w", "code=%{http_code} speed=%{speed_download} size=%{size_download}",
+                           "--max-time", "\(Int(secs))", url]
+            let pipe = Pipe(); p.standardOutput = pipe
+            p.standardError = FileHandle.nullDevice
+            if (try? p.run()) != nil {
+                print("нагрузка запущена на \(Int(secs))с: \(url)")
+                p.waitUntilExit()
+                let out = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+                print("нагрузка завершена: \(out)")
+            } else {
+                print("нагрузку запустить не удалось"); exit(1)
+            }
+        case "--load-probe":
+            // Диагностика: дочерний curl из процесса приложения — работает ли вообще.
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+            p.arguments = ["-s", "-o", "/dev/null", "-w", "code=%{http_code} speed=%{speed_download} size=%{size_download}",
+                           "--max-time", "8", "https://speed.cloudflare.com/__down?bytes=20000000"]
+            let pipe = Pipe(); p.standardOutput = pipe
+            let errPipe = Pipe(); p.standardError = errPipe
+            do {
+                try p.run()
+            } catch {
+                print("запуск не удался: \(error)"); exit(1)
+            }
+            p.waitUntilExit()
+            let out = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            let err = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            print("status=\(p.terminationStatus) \(out) err=\(err.prefix(120))")
+        case "--panel-expand":
+            DistributedNotificationCenter.default().post(
+                name: AppIdentity.notification("panel-expand"), object: nil)
+            Thread.sleep(forTimeInterval: 1.0)
+        case "--traffic-show":
+            // Живая проверка: показать остров так, как это делает наведение.
+            let seconds = args.count > 2 ? Double(args[2]) ?? 5 : 5
+            let dnc = DistributedNotificationCenter.default()
+            dnc.post(name: AppIdentity.notification("traffic-show"),
+                     object: nil, userInfo: ["seconds": seconds])
+            Thread.sleep(forTimeInterval: seconds + 0.5)
+        case "--net-raw":
+            // Абсолютные счётчики en* из двух источников — для сверки парсеров.
+            func sysctlRx() -> UInt64 {
+                var t: UInt64 = 0
+                var per: [String: UInt64] = [:]
+                for (k, c) in Metrics.shared.networkCounters() where c.rx > 0 { t += c.rx; per[k] = c.rx }
+                if args.contains("-v") { for (k, v) in per.sorted(by: { $0.key < $1.key }) { print("  sysctl \(k)=\(v)") } }
+                return t
+            }
+            let s1 = sysctlRx()
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/sbin/netstat")
+            p.arguments = ["-ibn"]
+            let pipe = Pipe(); p.standardOutput = pipe
+            try? p.run()
+            let out = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            p.waitUntilExit()
+            var ns: UInt64 = 0
+            var seen: [String: UInt64] = [:]
+            for line in out.split(separator: "\n") {
+                let c = line.split(separator: " ", omittingEmptySubsequences: true)
+                guard c.count >= 10, c[0].hasPrefix("en"), c[2].hasPrefix("<Link") else { continue }
+                if let r = UInt64(c[6]) { ns += r; seen[String(c[0])] = r }
+            }
+            print("netstat_total=\(ns) sysctl_total=\(s1) отношение=\(String(format: "%.2f", s1 > 0 ? Double(ns) / Double(s1) : 0))")
+            if args.contains("-v") {
+                for (k, v) in seen.sorted(by: { $0.key < $1.key }) { print("  netstat \(k)=\(v)") }
+            }
+        case "--traffic-debug":
+            func sum() -> (UInt64, UInt64, [String: NetworkCounter]) {
+                let c = Metrics.shared.networkCounters()
+                var rx: UInt64 = 0, tx: UInt64 = 0
+                for (_, v) in c { rx += v.rx; tx += v.tx }
+                return (rx, tx, c)
+            }
+            let a = sum()
+            print("t0 rx=\(a.0) tx=\(a.1) keys=\(a.2.keys.sorted().joined(separator: ","))")
+            for (k, v) in a.2.sorted(by: { $0.key < $1.key }) { print("   \(k) rx=\(v.rx) tx=\(v.tx)") }
+            Thread.sleep(forTimeInterval: 1.5)
+            let b = sum()
+            print("t1 rx=\(b.0) tx=\(b.1) deltaRx=\(b.0 >= a.0 ? b.0 - a.0 : 0) deltaTx=\(b.1 >= a.1 ? b.1 - a.1 : 0)")
+            var s = NetworkRateSampler()
+            _ = s.sample(a.2, at: 1000)
+            let r = s.sample(b.2, at: 1001.5)
+            print("sampler down=\(String(format: "%.1f", r.down))KB/s up=\(String(format: "%.1f", r.up))KB/s")
+        case "--traffic-cross-check":
+            // R1: сверка с независимым источником — netstat -ib по физическому интерфейсу.
+            func netstatBytes() -> (rx: UInt64, tx: UInt64)? {
+                let p = Process()
+                p.executableURL = URL(fileURLWithPath: "/usr/sbin/netstat")
+                p.arguments = ["-ibn"]
+                let pipe = Pipe()
+                p.standardOutput = pipe
+                p.standardError = FileHandle.nullDevice
+                do { try p.run() } catch { return nil }
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                p.waitUntilExit()
+                guard let text = String(data: data, encoding: .utf8) else { return nil }
+                var rx: UInt64 = 0, tx: UInt64 = 0
+                for line in text.split(separator: "\n").dropFirst() {
+                    let c = line.split(separator: " ", omittingEmptySubsequences: true)
+                    guard c.count >= 10, c[0].hasPrefix("en"), c[2].hasPrefix("<Link") else { continue }
+                    if let r = UInt64(c[6]), let t = UInt64(c[9]) { rx += r; tx += t }
+                }
+                return (rx, tx)
+            }
+            guard netstatBytes() != nil else { print("netstat недоступен"); exit(1) }
+            // --with-load: генератор нагрузки запускается дочерним процессом, чтобы
+            // сверка шла на реальном трафике (фоновые задания оболочки качают 1 байт).
+            var load: Process?
+            if args.contains("--with-load") {
+                let p = Process()
+                p.executableURL = URL(fileURLWithPath: "/usr/bin/curl")
+                p.arguments = ["-s", "-o", "/dev/null", "--max-time", "30",
+                               "https://speed.cloudflare.com/__down?bytes=10000000"]
+                p.standardOutput = FileHandle.nullDevice
+                p.standardError = FileHandle.nullDevice
+                if (try? p.run()) != nil {
+                    load = p
+                    Thread.sleep(forTimeInterval: 1.5)
+                } else {
+                    print("нагрузку запустить не удалось")
+                }
+            }
+            let monitor = TrafficMonitor.shared
+            monitor.resetForCheck()
+            func sysctlRx() -> UInt64 {
+                var t: UInt64 = 0
+                for (_, c) in Metrics.shared.networkCounters() where c.rx > 0 { t += c.rx }
+                return t
+            }
+            guard let a = netstatBytes() else { print("netstat недоступен"); exit(1) }
+            let rawA = sysctlRx()
+            let stampA = ProcessInfo.processInfo.systemUptime
+            monitor.tickForCheck()
+            Thread.sleep(forTimeInterval: 3.0)
+            let stampB = ProcessInfo.processInfo.systemUptime
+            let rawB = sysctlRx()
+            guard let b = netstatBytes() else { print("netstat недоступен"); exit(1) }
+            monitor.tickForCheck()
+            load?.terminate()
+            let span = max(1.0, stampB - stampA)
+            let ref = Double(b.rx >= a.rx ? b.rx - a.rx : 0) / 1024 / span
+            let ref2 = Double(rawB >= rawA ? rawB - rawA : 0) / 1024 / span
+            let ours = monitor.display?.down ?? 0
+            let delta = ref > 5 ? abs(ours - ref) / ref * 100 : -1
+            print("netstat=\(String(format: "%.1f", ref))KB/s sysctl=\(String(format: "%.1f", ref2))KB/s traffic=\(String(format: "%.1f", ours))KB/s окно=\(String(format: "%.1f", span))с delta=\(delta < 0 ? "n/a" : String(format: "%.1f%%", delta))")
+        case "--traffic-buffer-check":
+            var h = TrafficHistory()
+            for i in 0..<65 { h.append(TrafficPoint(down: Double(i), up: Double(65 - i))) }
+            print("history=\(h.count) window=\(h.windowSeconds) first=\(Int(h.points.first?.down ?? -1)) last=\(Int(h.points.last?.down ?? -1)) peak=\(String(format: "%.0f", h.peak))")
+        case "--render-traffic":
+            let path = args.count > 2 ? args[2] : "/tmp/traffic.png"
+            let demo = args.contains("--demo")
+            var scene = TrafficHUD.scene()
+            if demo {
+                var h = TrafficHistory()
+                for i in 0..<60 {
+                    let t = Double(i) / 59
+                    h.append(TrafficPoint(down: 420 + 260 * sin(t * 6.2) + 90 * sin(t * 19),
+                                          up: 60 + 55 * sin(t * 4.1 + 1.2)))
+                }
+                scene = TrafficScene(history: h.points, down: h.points.last?.down, up: h.points.last?.up, peak: h.peak)
+            }
+            let ok = TrafficIslandView.render(to: path, scene: scene)
+            print(ok ? "рендер трафика: \(path)" : "рендер не удался")
         case "--connection-check":
             print("Happ=\(ConnectionMonitor.happStatus()) CheckPoint=\(ConnectionMonitor.checkpointStatus())")
         case "--settings":
@@ -199,6 +421,14 @@ enum CLI {
             let ok = NotchHUD.renderMotion(to: path, kind: kind, value: value)
             print(ok ? "кадры реальной анимации: \(path)" : "не удалось снять анимацию")
         case "--render-island":
+            // Первый аргумент может быть режимом (traffic/brightness/volume) или сразу путём.
+            if args.count > 2, args[2] == "traffic" {
+                let path = args.count > 3 ? args[3] : "/tmp/island-traffic.png"
+                let scene = TrafficIslandView.demoScene(empty: args.contains("--empty"))
+                let ok = TrafficIslandView.render(to: path, scene: scene)
+                print(ok ? "рендер traffic: \(path)" : "рендер traffic не удался")
+                exit(ok ? 0 : 1)
+            }
             let kind: LevelKind
             let value: Float
             let path: String
@@ -462,6 +692,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardMode.shared.start()
         DistributedNotificationCenter.default().addObserver(forName: AppIdentity.notification("keyboard-settings"),object:nil,queue:.main) { _ in KeyboardMode.shared.showSettings() }
         Onboarding.shared.onShowPanel = { [weak self] in self?.deck.expand() }
+        TrafficHUD.shared.startHoverWatch()
         Onboarding.shared.onDemo = { [weak self] in self?.deck.runQuickDemo() }
         DispatchQueue.main.async {Onboarding.shared.showIfNeeded()}
         NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification,

@@ -290,6 +290,17 @@ final class DeckController {
         let dnc = DistributedNotificationCenter.default()
         dnc.addObserver(forName:AppIdentity.notification("profiles"),object:nil,queue:.main) {_ in ProfileManager.shared.show()}
         dnc.addObserver(forName:AppIdentity.notification("charge-test"),object:nil,queue:.main) {_ in NotchHUD.shared.showCharging()}
+        dnc.addObserver(forName: AppIdentity.notification("panel-expand"), object: nil, queue: .main) { [weak self] _ in
+            Dbg.log("panel: expand by notification")
+            self?.expand()
+        }
+        dnc.addObserver(forName: AppIdentity.notification("traffic-show"), object: nil, queue: .main) { note in
+            // Живая проверка без наведения: остров показывается как по ховеру.
+            let seconds = (note.userInfo?["seconds"] as? TimeInterval) ?? 5
+            Dbg.log("traffic: show by notification, seconds=\(seconds)")
+            TrafficHUD.shared.show(hold: seconds, byHover: false)
+            Dbg.log("traffic: show called, isShowing=\(TrafficHUD.shared.isShowing)")
+        }
         NotificationCenter.default.addObserver(forName:.init("NotchDeck.chargeTest"),object:nil,queue:.main) {_ in NotchHUD.shared.showCharging()}
         dnc.addObserver(forName:AppIdentity.notification("permissions"),object:nil,queue:.main) {_ in
             Dbg.log("PERMISSIONS screen=\(CGPreflightScreenCaptureAccess()) AX=\(AXIsProcessTrusted()) microphoneRequested=false")
@@ -504,7 +515,8 @@ final class DeckController {
         guard !demoRunning else{return}
         if !model.expanded {
             let hot = geometry.collapsedFrame.insetBy(dx: -10, dy: -8)
-            if hot.contains(p) { expand() }
+            // R10: пока остров трафика держит приоритет, панель не раскрываем.
+            if hot.contains(p), !TrafficHUD.shared.shouldHoldPanelExpand { expand() }
         } else if !model.editMode {
             if content.mediaOnly,panel.frame.contains(p) {expand();return}
             if !panel.frame.insetBy(dx: -2, dy: -2).contains(p) { scheduleCollapse() }

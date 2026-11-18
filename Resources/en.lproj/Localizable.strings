@@ -146,7 +146,7 @@
 "Настройки приложения" = "App settings";
 "Язык интерфейса" = "Interface language";
 "Язык применяется сразу и сохраняется. По умолчанию — язык системы." = "The language applies immediately and is saved. The default is your system language.";
-"Требования: Apple Silicon и macOS 26 или новее." = "Requires Apple Silicon and macOS 26 or later.";
+"Требования: Apple Silicon и macOS 14 или новее." = "Requires Apple Silicon and macOS 14 or later.";
 
 /* ─── Settings: apps ────────────────────────────────────────────────── */
 "Приложения" = "Apps";

@@ -51,7 +51,7 @@ swiftc -target arm64-apple-macos14.0 -swift-version 5 -O -o "$BIN" \
   Sources/Keyboard/*.swift Sources/L10n.swift Sources/Metrics.swift Sources/SystemControl.swift Sources/Store.swift \
   Sources/NowPlaying.swift Sources/Tools.swift Sources/Procs.swift Sources/Keys.swift \
   Sources/ToolPanels.swift Sources/ProcPanel.swift \
-  Sources/Profiles.swift Sources/ProfileChecks.swift Sources/Onboarding.swift Sources/ScreenRecording.swift Sources/PowerEvents.swift Sources/Connections.swift Sources/Notes.swift Sources/Checks.swift Sources/Preferences.swift Sources/SystemMedia.swift Sources/HUDMotion.swift Sources/NotchHUD.swift Sources/Cleanup.swift Sources/Views.swift Sources/Panel.swift Sources/main.swift \
+  Sources/Profiles.swift Sources/ProfileChecks.swift Sources/Onboarding.swift Sources/ScreenRecording.swift Sources/PowerEvents.swift Sources/Connections.swift Sources/Notes.swift Sources/Checks.swift Sources/Preferences.swift Sources/SystemMedia.swift Sources/HUDMotion.swift Sources/NotchHUD.swift Sources/Cleanup.swift Sources/Views.swift Sources/Panel.swift Sources/Traffic.swift Sources/TrafficMonitor.swift Sources/TrafficIsland.swift Sources/TrafficHUD.swift Sources/main.swift \
   -framework AppKit -framework CoreAudio -framework IOKit -framework Carbon \
   -framework AVFoundation -framework SystemConfiguration -framework ImageIO -framework ServiceManagement -framework CoreGraphics 2>&1 | tail -40
 
