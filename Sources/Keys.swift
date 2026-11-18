@@ -33,6 +33,8 @@ final class MediaKeyTap {
     }
 
     private var retryTimer: Timer?
+    private var watchdog: Timer?
+    private var wakeObserver: NSObjectProtocol?
     private var ownedKeys = Set<Int>()
     private var replacementForTest: ((Int, Bool) -> Bool)?
     var canReplace: () -> Bool = { Preferences.shared.bool("hudEnabled") && !NotchHUD.shared.panelExpanded }
@@ -40,7 +42,11 @@ final class MediaKeyTap {
     /// A filtering tap owns a key only after applying its change successfully.
     @discardableResult
     func start() -> Bool {
-        if active { return true }
+        if active, let live = tap, CGEvent.tapIsEnabled(tap: live) {
+            return true
+        }
+        // macOS гасит tap после сна или по таймауту — пересоздаём, иначе системный OSD возвращается.
+        if active { retireTap() }
         guard enabled, AXIsProcessTrusted() else {
             scheduleRetry()
             return false
@@ -77,6 +83,37 @@ final class MediaKeyTap {
         retryTimer = timer
     }
 
+    /// Снимает мёртвый tap, чтобы следующий start() его пересоздал.
+    private func retireTap() {
+        Dbg.log("keys: tap lost (сон или таймаут) — пересоздаю")
+        if let t = tap { CGEvent.tapEnable(tap: t, enable: false) }
+        if let s = source { CFRunLoopRemoveSource(CFRunLoopGetMain(), s, .commonModes) }
+        tap = nil
+        source = nil
+        active = false
+        ownedKeys.removeAll()
+    }
+
+    /// Следит, что tap жив: macOS молча гасит его после сна, и тогда системный OSD возвращается.
+    func startWatchdog(interval: TimeInterval = 3) {
+        guard watchdog == nil else { return }
+        let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
+            guard let self, self.enabled else { return }
+            if let live = self.tap, self.active, CGEvent.tapIsEnabled(tap: live) { return }
+            _ = self.start()
+        }
+        timer.tolerance = 1
+        RunLoop.main.add(timer, forMode: .common)
+        watchdog = timer
+
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
+            // После пробуждения tap почти всегда мёртв; небольшой пауза — сеть/дисплей успевают подняться.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { _ = MediaKeyTap.shared.start() }
+        }
+        Dbg.log("keys: watchdog tap запущен (интервал \(Int(interval))с, пробуждение отслеживается)")
+    }
+
     func stop() {
         if let t = tap { CGEvent.tapEnable(tap: t, enable: false) }
         if let s = source { CFRunLoopRemoveSource(CFRunLoopGetMain(), s, .commonModes) }
@@ -86,6 +123,10 @@ final class MediaKeyTap {
         ownedKeys.removeAll()
         retryTimer?.invalidate()
         retryTimer = nil
+        watchdog?.invalidate()
+        watchdog = nil
+        if let w = wakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(w) }
+        wakeObserver = nil
     }
 
     /// true — событие наше, дальше не пускаем (системный OSD не появится).
@@ -175,6 +216,33 @@ final class MediaKeyTap {
         owner.canReplace = { Preferences.shared.bool("hudEnabled") && !NotchHUD.shared.panelExpanded }
         owner.ownedKeys.removeAll()
         print("KEY ROUTING PASS: filtering, exactly once, repeats, mute, fine step, failed-write fallback, hidden HUD")
+    }
+
+    /// Проверяет, что watchdog пересоздаёт погашенный системой tap (сценарий сна).
+    static func testWatchdog() {
+        let owner = shared
+        guard owner.start() else {
+            fputs("WATCHDOG FAIL: tap не создан\n", stderr); exit(1)
+        }
+        guard let first = owner.tap else {
+            fputs("WATCHDOG FAIL: нет порта tap\n", stderr); exit(1)
+        }
+        // Гасим tap так, как это делает macOS после сна/таймаута.
+        CGEvent.tapEnable(tap: first, enable: false)
+        guard !CGEvent.tapIsEnabled(tap: first) else {
+            fputs("WATCHDOG FAIL: tap не удалось погасить для проверки\n", stderr); exit(1)
+        }
+        guard owner.start() else {
+            fputs("WATCHDOG FAIL: start() не восстановил tap\n", stderr); exit(1)
+        }
+        guard let second = owner.tap, CGEvent.tapIsEnabled(tap: second) else {
+            fputs("WATCHDOG FAIL: tap остался выключенным\n", stderr); exit(1)
+        }
+        guard second !== first else {
+            fputs("WATCHDOG FAIL: мёртвый порт не заменён новым\n", stderr); exit(1)
+        }
+        owner.stop()
+        print("WATCHDOG PASS: погашенный tap пересоздан, старый порт отброшен")
     }
 
     /// Диагностический путь: только читает уже установленный системой уровень.

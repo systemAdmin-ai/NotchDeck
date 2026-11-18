@@ -6,6 +6,8 @@ enum CLI {
     static func run(_ args: [String]) {
         let cmd = args[1]
         switch cmd {
+        case "--test-tap-watchdog":
+            MediaKeyTap.testWatchdog()
         case "--test-keyboard-mode":
             KeyboardModeChecks.run()
         case "--keyboard-settings":

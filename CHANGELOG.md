@@ -1,3 +1,12 @@
+# 2.1.1 · Neon survives sleep and updates
+
+- The media-key interceptor no longer dies silently. It now checks that its event tap is
+  still alive every 3 seconds and rebuilds the tap after sleep or a system timeout, so the
+  neon brightness/volume readout stops falling back to the system overlay.
+- The bundle is signed with a stable local certificate instead of ad-hoc: the code
+  requirement is tied to the certificate rather than the build hash, so the Accessibility
+  permission survives version updates. One re-approval is required for this first build.
+
 # 2.1.0 · macOS 14, CI tests, Homebrew
 
 - The bundle now targets macOS 14 (Sonoma) instead of macOS 26. Liquid Glass stays on

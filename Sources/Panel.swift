@@ -569,6 +569,7 @@ final class DeckController {
         }
         MediaKeyTap.shared.onChange = handler
         let tapOn = MediaKeyTap.shared.start()
+        MediaKeyTap.shared.startWatchdog()
         // Poll external changes; handled key writes synchronize the baseline to avoid duplicates.
         LevelWatch.shared.onChange = handler
         LevelWatch.shared.start()

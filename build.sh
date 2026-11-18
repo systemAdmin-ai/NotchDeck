@@ -20,8 +20,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleExecutable</key><string>NotchDeck</string>
   <key>CFBundleIdentifier</key><string>com.notchdeck.app</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>2.1.0</string>
-  <key>CFBundleVersion</key><string>220</string>
+  <key>CFBundleShortVersionString</key><string>2.1.1</string>
+  <key>CFBundleVersion</key><string>221</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>CFBundleIconFile</key><string>AppIcon.icns</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
@@ -85,6 +85,13 @@ cp Assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 for lproj in Resources/*.lproj; do
   [ -d "$lproj" ] && cp -R "$lproj" "$APP/Contents/Resources/"
 done
+# Подпись стабильным сертификатом: designated requirement привязан к сертификату, а не к
+# cdhash, поэтому разрешение «Универсальный доступ» переживает обновления (см. спеку
+# 2026-11-18-перехват-после-сна-и-подписи.md, R4).
+if [ -z "${SIGN_IDENTITY:-}" ]; then
+  SIGN_IDENTITY=$(security find-identity -v -p codesigning 2>/dev/null \
+    | sed -n 's/.*"\(NotchDeck Self-Signed\)".*/\1/p' | head -1)
+fi
 codesign --force --sign "${SIGN_IDENTITY:--}" --timestamp=none "$APP"
 codesign --verify --deep --strict "$APP"
 echo "BUILD OK: $BIN"
