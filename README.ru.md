@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/Apple_Silicon-arm64-000000?logo=apple&logoColor=white" alt="Apple Silicon">
   <img src="https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white" alt="macOS 14+">
   <img src="https://img.shields.io/badge/license-MIT-3ddc97" alt="MIT">
-  <img src="https://img.shields.io/badge/Preview-2.1.0-63e6d2" alt="Preview 2.1.0">
+  <img src="https://img.shields.io/badge/Preview-2.1.1-63e6d2" alt="Preview 2.1.1">
   <a href="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml"><img src="https://github.com/systemAdmin-ai/NotchDeck/actions/workflows/build.yml/badge.svg" alt="Build and tests"></a>
 </p>
 
@@ -19,8 +19,8 @@
   <a href="README.md"><img src="https://img.shields.io/badge/English-0b0e14?style=for-the-badge" alt="English"></a>
 </p>
 
-> **Preview 2.1.0.** Приложение ещё развивается. Сборка проверена на macOS 27,
-> Apple Silicon. Intel и версии macOS ниже 26 не поддерживаются этим релизом.
+> **Preview 2.1.1.** Приложение ещё развивается. Сборка проверена на macOS 27,
+> Apple Silicon. Нужен macOS 14 или новее, Intel не поддерживается этим релизом.
 > Developer ID и нотариализации Apple пока нет — это явно отмечено в инструкции установки.
 
 ## Режим клавиатуры (разрабатываемая версия 2.1)
