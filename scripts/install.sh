@@ -6,7 +6,7 @@
 # Это не отключение защиты и не xattr -d: просто загрузка не через браузер.
 # SHA256 проверяется по опубликованному SHA256SUMS.txt.
 set -euo pipefail
-VERSION="${NOTCHDECK_VERSION:-2.1.0}"
+VERSION="${NOTCHDECK_VERSION:-2.1.1}"
 TAG="${NOTCHDECK_TAG:-latest}"
 if [ "$TAG" = latest ]; then
   BASE="https://github.com/systemAdmin-ai/NotchDeck/releases/latest/download"
@@ -19,7 +19,11 @@ TARGET="${NOTCHDECK_TARGET:-/Applications}"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-echo "→ Скачиваю NotchDeck $VERSION ($TAG)"
+if [ "$TAG" = latest ]; then
+  echo "→ Скачиваю последний релиз NotchDeck"
+else
+  echo "→ Скачиваю NotchDeck $VERSION ($TAG)"
+fi
 curl -fsSL "$BASE/$ZIP_NAME" -o "$WORK/app.zip"
 curl -fsSL "$BASE/SHA256SUMS.txt" -o "$WORK/sums.txt"
 

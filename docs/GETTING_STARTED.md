@@ -20,9 +20,11 @@ brightness and volume keys. Onboarding never grants permissions for you. Do not
 grant access if you do not need the feature.
 
 If macOS asks you to relaunch the app after a permission change — relaunch it.
-After updating an ad-hoc build the old permission entry can go stale. Remove
-exactly NotchDeck from that list, add the current copy from Applications and
-relaunch it. Other apps are not affected.
+A permission is bound to the app's signature: the Preview release keeps it across
+updates, while a source build does so only after you create the local certificate
+(`scripts/setup-signing.sh`, see the README). If the key handling still goes silent
+after an update, remove exactly NotchDeck from that list, add the current copy from
+Applications and relaunch it. Other apps are not affected.
 
 ## Recording
 

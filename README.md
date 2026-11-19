@@ -36,38 +36,69 @@ Open **Settings → Windows keyboard** for automatic mode and Input Monitoring p
 
 ## Install
 
-**One command** (recommended — skips the "app can't be checked" dialog):
+Requires an Apple Silicon Mac (M1 or newer) and macOS 14 or newer. Intel is unsupported.
+
+### One command (recommended)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/systemAdmin-ai/NotchDeck/main/scripts/install.sh | bash
 ```
 
-The script downloads the archive, verifies its SHA256 against the published `SHA256SUMS.txt`, unpacks it into `/Applications` and launches the app.
+The script downloads the latest release archive, verifies its SHA256 against the published
+`SHA256SUMS.txt`, unpacks it into `/Applications` and launches the app. There is no
+"app can't be checked" dialog: the file is fetched with curl rather than a browser, so it
+carries no quarantine flag. Gatekeeper and SIP stay enabled.
 
-**Or with Homebrew:**
+### Homebrew
 
 ```bash
 brew install --cask systemAdmin-ai/notchdeck/notchdeck
 ```
 
-The app is not Apple-notarized, so clear the quarantine flag once before the first launch
-(or install with `--no-quarantine`). Updates come with `brew upgrade`:
+Update with `brew upgrade --cask notchdeck`, remove with `brew uninstall --cask notchdeck`.
+The cask downloads the DMG, so it needs the quarantine flag cleared:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/NotchDeck.app"
-# or
 brew install --cask --no-quarantine systemAdmin-ai/notchdeck/notchdeck
 ```
 
-**Or manually with the DMG:**
+### DMG, manually
 
-Download the Apple Silicon DMG, open it, and drag NotchDeck into Applications.
-Launch it from Applications and complete the four-step onboarding.
+1. Open the [latest release](https://github.com/systemAdmin-ai/NotchDeck/releases/latest)
+   and download `NotchDeck-<version>-AppleSilicon.dmg`.
+2. Open the DMG and drag **NotchDeck.app** into **Applications**.
+3. Launch it from Applications.
 
-This preview is signed with a local certificate, **not Developer ID signed or Apple notarized**.
-macOS may block the first launch. Use the standard Privacy & Security flow only
-if you choose to trust the app; see [Apple's guidance](https://support.apple.com/en-us/102445).
-Do not disable Gatekeeper or SIP. Permission refresh may be needed after updates.
+The app is signed with a local certificate — no Developer ID, not Apple-notarized — so the
+first launch may be blocked. If macOS shows the "cannot be checked" dialog, open
+**System Settings → Privacy & Security**, find the NotchDeck entry and click
+**Open Anyway**. That is Apple's own flow: [guidance](https://support.apple.com/en-us/102445).
+Do not disable Gatekeeper or SIP, and do not strip the quarantine flag by hand — the person
+running the app decides whether to trust it, not a script.
+
+### After installing
+
+- Finish the short onboarding: interface language, then the offered permissions.
+  Permissions are optional — the panel and metrics work immediately; without them only the
+  brightness/volume HUD replacement, screenshots, recording and voice stay silent.
+  See [first launch and permissions](docs/GETTING_STARTED.md).
+- Update by re-running the install command or with `brew upgrade --cask notchdeck`.
+  Settings and permissions survive.
+- Remove by dragging the app to the Trash; clear preferences with
+  `defaults delete com.notchdeck.app` if you want them gone too.
+
+### Building from source
+
+Create the local signing certificate first, otherwise the build is ad-hoc signed and macOS
+drops the Accessibility permission after the first rebuild:
+
+```bash
+./scripts/setup-signing.sh
+./build.sh
+```
+
+The same mechanism as a standalone repository usable in any project:
+[systemAdmin-ai/macos-local-codesign](https://github.com/systemAdmin-ai/macos-local-codesign).
 
 ## Screenshots
 
@@ -133,15 +164,6 @@ Install Xcode Command Line Tools with macOS 26+ SDK (the app itself targets macO
 
 The app is in `Build`, packages in `Dist`. Dependencies are included as source.
 
-**Create the local signing certificate once.** Without it the build is ad-hoc signed and macOS
-drops the Accessibility permission after every rebuild:
-
-```bash
-./scripts/setup-signing.sh
-```
-
-It creates a self-signed "NotchDeck Self-Signed" certificate (RSA-2048, 10 years, codeSigning EKU),
-imports it into your login keychain and trusts it for code signing only. No sudo, no password
-prompts, the private key never leaves your Mac. Re-grant Accessibility once after the first such
-build; later updates keep it. See [the spec](specs/2026-11-18-локальный-сертификат-для-любого-мака.md).
+Create the local signing certificate once (`./scripts/setup-signing.sh`) — see
+[Building from source](#building-from-source) above for why and what it does.
 Code is MIT; [third-party licenses](THIRD_PARTY_NOTICES.md) are preserved.
