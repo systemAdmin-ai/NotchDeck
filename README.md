@@ -87,7 +87,7 @@ running the app decides whether to trust it, not a script.
 - Remove by dragging the app to the Trash; clear preferences with
   `defaults delete com.notchdeck.app` if you want them gone too.
 
-### Building from source
+### Building it yourself
 
 Create the local signing certificate first, otherwise the build is ad-hoc signed and macOS
 drops the Accessibility permission after the first rebuild:
@@ -165,5 +165,5 @@ Install Xcode Command Line Tools with macOS 26+ SDK (the app itself targets macO
 The app is in `Build`, packages in `Dist`. Dependencies are included as source.
 
 Create the local signing certificate once (`./scripts/setup-signing.sh`) — see
-[Building from source](#building-from-source) above for why and what it does.
+[Building it yourself](#building-it-yourself) above for why and what it does.
 Code is MIT; [third-party licenses](THIRD_PARTY_NOTICES.md) are preserved.
