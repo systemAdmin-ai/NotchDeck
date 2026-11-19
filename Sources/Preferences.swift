@@ -54,6 +54,9 @@ final class Preferences {
     func number(_ key: String, fallback: Double) -> Double {
         (defaults.object(forKey: "NotchDeck."+key) as? NSNumber)?.doubleValue ?? fallback
     }
+    func string(_ key: String, fallback: String) -> String {
+        defaults.string(forKey: "NotchDeck."+key) ?? fallback
+    }
     func set(_ value: Any, for key: String) {
         defaults.set(value, forKey: "NotchDeck."+key)
         NotificationCenter.default.post(name: Self.didChange, object: nil)
@@ -107,8 +110,8 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
     required init?(coder:NSCoder) {fatalError()}
     private func buildTabs() {
         while tabs.numberOfTabViewItems > 0 { tabs.removeTabViewItem(tabs.tabViewItem(at:0)) }
-        controls.removeAll();appList=nil;stylePreview=nil;styleDescription=nil
-        makeGeneral(); makeKeyboard(); makeApplications(); makeButtons(); makeAppearance(); makeBehavior(); makeAlerts()
+        controls.removeAll();appList=nil;stylePreview=nil;styleDescription=nil;captureFolderLabel=nil
+        makeGeneral(); makeKeyboard(); makeApplications(); makeCapture(); makeButtons(); makeAppearance(); makeBehavior(); makeAlerts()
     }
     private func tab(_ name:String)->NSView {
         let item=NSTabViewItem(identifier:name);item.label=name
@@ -183,6 +186,40 @@ final class PreferencesView: NSView, NSTextFieldDelegate {
             _=button(L("Убрать"),frame:NSRect(x:364,y:y,width:92,height:26),in:appList,action:#selector(removeApp(_:)),id:app.id);y+=36
         }
         appList.frame.size.height=max(280,y+10)
+    }
+    // MARK: - Снимки и запись
+    private var captureFolderLabel:NSTextField?
+    private func makeCapture() {
+        let view=tab(L("Запись"))
+        _=text(L("Снимки и запись экрана"),at:NSPoint(x:18,y:16),in:view,size:16)
+        let label=NSTextField(labelWithString:Capture.folder.path)
+        label.font = .systemFont(ofSize:13,weight:.semibold)
+        label.lineBreakMode = .byTruncatingMiddle
+        label.frame=NSRect(x:18,y:70,width:520,height:20)
+        label.toolTip=Capture.folder.path
+        view.addSubview(label);captureFolderLabel=label
+        _=button(L("Изменить…"),frame:NSRect(x:18,y:102,width:150,height:30),in:view,action:#selector(chooseCaptureFolder),id:"chooseCaptureFolder")
+        _=button(L("Открыть в Finder"),frame:NSRect(x:180,y:102,width:170,height:30),in:view,action:#selector(revealCaptureFolder),id:"revealCaptureFolder")
+        _=button(L("По умолчанию"),frame:NSRect(x:362,y:102,width:170,height:30),in:view,action:#selector(resetCaptureFolder),id:"resetCaptureFolder")
+        _=text(L("Сюда падают снимки и записи экрана. По умолчанию — «Рабочий стол → Screenshots»; смена папки действует сразу, перезапуск не нужен."),at:NSPoint(x:18,y:150),in:view)
+        _=text(L("Если выбранная папка удалена или недоступна, NotchDeck сохраняет файлы в папку по умолчанию."),at:NSPoint(x:18,y:214),in:view)
+    }
+    @objc private func chooseCaptureFolder() {
+        let panel=NSOpenPanel()
+        panel.title=L("Выбрать папку для снимков и записей")
+        panel.canChooseDirectories=true;panel.canChooseFiles=false
+        panel.canCreateDirectories=true;panel.allowsMultipleSelection=false
+        panel.directoryURL=Capture.folder
+        panel.beginSheetModal(for:window!) { [weak self] response in
+            guard response == .OK,let url=panel.url else{return}
+            Capture.setFolder(url);self?.refreshCaptureFolder()
+        }
+    }
+    @objc private func resetCaptureFolder() { Capture.setFolder(nil);refreshCaptureFolder() }
+    @objc private func revealCaptureFolder() { NSWorkspace.shared.activateFileViewerSelecting([Capture.folder]) }
+    private func refreshCaptureFolder() {
+        captureFolderLabel?.stringValue=Capture.folder.path
+        captureFolderLabel?.toolTip=Capture.folder.path
     }
     private func makeButtons() {
         let view=tab(L("Кнопки"))

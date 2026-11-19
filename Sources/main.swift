@@ -38,6 +38,8 @@ enum CLI {
             L10n.shared.set(.en); dump("после en")
             L10n.shared.set(.ru); dump("после ru")
             L10n.shared.set(previous)
+        case "--capture-folder":
+            print("папка: \(Capture.folder.path) по умолчанию=\(Capture.usingDefaultFolder)")
         case "--capture-status":
             print("screenCapture=\(CGPreflightScreenCaptureAccess()) microphoneRequested=false")
         case "--test-r39":

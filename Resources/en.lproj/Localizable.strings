@@ -323,3 +323,13 @@
 
 "Включено" = "On";
 "Выключено" = "Off";
+
+/* ─── Capture folder (Preferences.swift, Tools.swift) ───────────────── */
+"Снимки и запись экрана" = "Screenshots & recording";
+"Изменить…" = "Change…";
+"Открыть в Finder" = "Show in Finder";
+"По умолчанию" = "Default";
+"Выбрать папку для снимков и записей" = "Choose a folder for screenshots and recordings";
+"Сюда падают снимки и записи экрана. По умолчанию — «Рабочий стол → Screenshots»; смена папки действует сразу, перезапуск не нужен." = "Screenshots and screen recordings are saved here. Default is “Desktop → Screenshots”; a change applies immediately, no restart needed.";
+"Если выбранная папка удалена или недоступна, NotchDeck сохраняет файлы в папку по умолчанию." = "If the chosen folder is deleted or unavailable, NotchDeck saves files to the default folder.";
+"Нажми запись → выбери область, микрофон и звук → Начать. Красная кнопка с таймером показывает запись; повторное нажатие останавливает её. Файлы: папка из настроек, по умолчанию Рабочий стол → Screenshots." = "Hit record → pick an area, microphone and audio → Start. The red button with a timer shows recording; press it again to stop. Files go to the folder from settings, by default Desktop → Screenshots.";

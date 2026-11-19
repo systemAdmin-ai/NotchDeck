@@ -34,8 +34,31 @@ input device itself is changed in the system sound settings. For a region, drag
 to select it; Esc cancels the selection. Recording then starts: the red button
 shows elapsed time, pressing it again stops and saves the file.
 
-Files land in `~/Desktop/Screenshots`. The timer counts from capture start and
-can differ slightly from the file duration because of encoder startup.
+Files land in the folder from Settings → Capture, `~/Desktop/Screenshots` by default.
+The timer counts from capture start and can differ slightly from the file duration
+because of encoder startup.
+
+### Permission granted, recording still blocked
+
+If the toggle under "Screen & System Audio Recording" is on but the app still asks for
+access, the stored permission belongs to a previous build. The system log shows why:
+
+```
+log show --last 15m --predicate 'subsystem == "com.apple.TCC"' | grep kTCCServiceScreenCapture
+```
+
+A `Failed to match existing code requirement` line means the stored permission did not
+match the current app signature. Fix it by resetting just this app's permission:
+
+```
+tccutil reset ScreenCapture com.notchdeck.app
+```
+
+Then relaunch NotchDeck, press "Open settings" in its prompt and turn the toggle on
+(if the app is missing from the list, add it with "+" from Applications). No admin
+rights are needed for the reset. One extra approval may be required the first time
+after moving from an ad-hoc signed build to a certificate-signed one; after that the
+permission survives updates.
 
 ## Setup and removal
 

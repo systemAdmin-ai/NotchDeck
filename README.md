@@ -142,7 +142,8 @@ Charging and alerts have their own glow. Close-ups and the brightness animation:
 - Hover over the notch, or use the menu-bar icon, to open the panel.
 - Use Settings to add your own apps, choose buttons and select a theme.
 - Press Record to choose full screen / region, microphone and system audio.
-  A red stop button shows elapsed time. Recordings go to `~/Desktop/Screenshots`.
+  A red stop button shows elapsed time. Recordings and screenshots go to the folder
+  chosen in Settings → Capture (`~/Desktop/Screenshots` by default).
 - Clipboard history is opt-in, memory-only, and cleared on exit. Login launch is opt-in.
 - Run the quick demo from the menu. Repeat onboarding from the same menu.
 

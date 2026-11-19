@@ -174,10 +174,49 @@ final class ShelfStore {
 
 // MARK: - Скриншоты и запись
 enum Capture {
+    /// Куда писать по умолчанию: Рабочий стол → Screenshots.
+    static var defaultFolder: URL {
+        URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Desktop/Screenshots")
+    }
+
+    /// Папка из настроек; недоступную пробуем создать, иначе откат к папке по умолчанию.
     static var folder: URL {
-        let u = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Desktop/Screenshots")
-        try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
-        return u
+        let custom = Preferences.shared.string("captureFolder", fallback: "")
+        guard !custom.isEmpty else {
+            _ = makeDirectory(defaultFolder)
+            return defaultFolder
+        }
+        let chosen = URL(fileURLWithPath: (custom as NSString).expandingTildeInPath)
+        if makeDirectory(chosen) { return chosen }
+        Dbg.log("capture: папка недоступна \(chosen.path) — использую папку по умолчанию")
+        _ = makeDirectory(defaultFolder)
+        return defaultFolder
+    }
+
+    /// Истина, когда пользователь не выбирал свою папку.
+    static var usingDefaultFolder: Bool {
+        Preferences.shared.string("captureFolder", fallback: "").isEmpty
+    }
+
+    /// Запомнить папку (`nil` — вернуть папку по умолчанию).
+    static func setFolder(_ url: URL?) {
+        let path = url?.standardizedFileURL.path ?? ""
+        Preferences.shared.set(path, for: "captureFolder")
+        Dbg.log("capture: папка сохранена \(path.isEmpty ? defaultFolder.path : path)")
+    }
+
+    @discardableResult
+    private static func makeDirectory(_ url: URL) -> Bool {
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) {
+            return isDir.boolValue && FileManager.default.isWritableFile(atPath: url.path)
+        }
+        do {
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            return true
+        } catch {
+            return false
+        }
     }
 
     static func stamp() -> String {
