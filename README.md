@@ -121,6 +121,17 @@ shasum -a 256 -c SHA256SUMS.txt
 A mismatch means the file was modified. Tell us instead of running it — see
 [SECURITY.md](SECURITY.md).
 
+Verification is optional and never needed to install. If you want proof that the
+file is ours:
+
+```sh
+# the checksum file is signed; the key is in this repo (notchdeck.pub) and on the site
+minisign -Vm SHA256SUMS.txt -x SHA256SUMS.txt.minisig -P RWTxeYVtAcbWJm9DCTQ9eY/sbTmz789D2/SfZMwsjl+StuA/4LYVoVp8
+
+# or ask GitHub: this file came from this repository's release workflow
+gh attestation verify NotchDeck.dmg --repo systemAdmin-ai/NotchDeck
+```
+
 ## Screenshots
 
 These are **version 2.0 component renders with synthetic demo data**. They contain no personal app shortcuts, VPN status or user preferences.

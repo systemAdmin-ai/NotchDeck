@@ -9,6 +9,8 @@ on:
         required: true
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 jobs:
   aliases:
     runs-on: ubuntu-latest
@@ -33,3 +35,32 @@ jobs:
           sha256sum --check SHA256SUMS.txt
           sha256sum "${dmg[0]}" "${zip[0]}" NotchDeck.dmg NotchDeck.zip > SHA256SUMS.txt
           gh release upload "$RELEASE_TAG" NotchDeck.dmg NotchDeck.zip SHA256SUMS.txt --clobber
+
+      # Подпись контрольных сумм: позволяет проверить файл без GitHub CLI и без Apple ID.
+      - name: Sign checksums with minisign
+        shell: bash
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MINISIGN_SECRET_KEY:-}" ]; then
+            echo "::error::секрет MINISIGN_SECRET_KEY не задан — подпись не выпущена"
+            exit 1
+          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq minisign
+          printf '%s\n' "$MINISIGN_SECRET_KEY" > minisign.key
+          chmod 600 minisign.key
+          minisign -S -s minisign.key -m assets/SHA256SUMS.txt -x assets/SHA256SUMS.txt.minisig
+          shred -u minisign.key 2>/dev/null || rm -f minisign.key
+          gh release upload "$RELEASE_TAG" assets/SHA256SUMS.txt.minisig --clobber
+
+      # Attestation: криптографическое подтверждение, что файл собран из этого workflow.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            assets/NotchDeck.dmg
+            assets/NotchDeck.zip
+            assets/SHA256SUMS.txt
+            assets/SHA256SUMS.txt.minisig

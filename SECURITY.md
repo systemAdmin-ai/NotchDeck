@@ -36,9 +36,26 @@ Confirmed reporters are credited in `CHANGELOG.md` unless they ask otherwise.
 
 ## Verifying a download
 
+Fast path — the checksum alone:
+
 ```sh
 shasum -a 256 -c SHA256SUMS.txt
 ```
 
 A mismatch means the file was modified in transit or by a mirror. Delete it and download
 again from https://github.com/systemAdmin-ai/NotchDeck/releases.
+
+Stronger checks, both optional — they prove the file is ours, not merely intact:
+
+```sh
+# 1. The checksum file is signed with minisign; the public key is notchdeck.pub in this repo.
+minisign -Vm SHA256SUMS.txt -x SHA256SUMS.txt.minisig -P RWTxeYVtAcbWJm9DCTQ9eY/sbTmz789D2/SfZMwsjl+StuA/4LYVoVp8
+
+# 2. GitHub can prove the artifact was produced by this repository's release workflow.
+gh attestation verify NotchDeck.dmg --repo systemAdmin-ai/NotchDeck
+```
+
+**Русский:** быстрая проверка — `shasum -a 256 -c SHA256SUMS.txt`. Если нужна гарантия,
+что файл наш, а не только целый: `minisign` по ключу из `notchdeck.pub` или
+`gh attestation verify NotchDeck.dmg --repo systemAdmin-ai/NotchDeck`. Обе проверки
+необязательны и на установку не влияют.

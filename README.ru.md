@@ -116,6 +116,16 @@ shasum -a 256 -c SHA256SUMS.txt
 Если сумма не совпала — файл изменён. Напишите нам, а не запускайте его: см.
 [SECURITY.md](SECURITY.md).
 
+Проверка необязательна и для установки не нужна. Если хочется убедиться, что файл наш:
+
+```sh
+# файл контрольных сумм подписан, ключ лежит в репозитории (notchdeck.pub) и на сайте
+minisign -Vm SHA256SUMS.txt -x SHA256SUMS.txt.minisig -P RWTxeYVtAcbWJm9DCTQ9eY/sbTmz789D2/SfZMwsjl+StuA/4LYVoVp8
+
+# или спросить GitHub: файл выпущен релизным workflow этого репозитория
+gh attestation verify NotchDeck.dmg --repo systemAdmin-ai/NotchDeck
+```
+
 ## Что умеет
 
 - Раскрывает компактную панель при наведении на чёлку и сворачивает при уходе курсора.
