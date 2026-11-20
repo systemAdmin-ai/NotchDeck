@@ -95,6 +95,27 @@ ad-hoc и разрешение «Универсальный доступ» сл�
 Тот же механизм отдельным репозиторием, пригодным для любого проекта:
 [systemAdmin-ai/macos-local-codesign](https://github.com/systemAdmin-ai/macos-local-codesign).
 
+## Где скачивать
+
+NotchDeck распространяется ровно из трёх мест:
+
+- **Релизы** — https://github.com/systemAdmin-ai/NotchDeck/releases
+- **Homebrew** — `brew install --cask systemAdmin-ai/notchdeck/notchdeck`
+- **Этот сайт** — https://systemAdmin-ai.github.io/NotchDeck/
+
+Платной, «активированной» или «взломанной» версии не существует: приложение бесплатное
+и под MIT, ломать в нём нечего. Если NotchDeck предлагает другой сайт — это перепаковка,
+и за её содержимое мы не отвечаем.
+
+К каждому релизу приложен `SHA256SUMS.txt`. Проверьте скачанный файл до первого запуска:
+
+```sh
+shasum -a 256 -c SHA256SUMS.txt
+```
+
+Если сумма не совпала — файл изменён. Напишите нам, а не запускайте его: см.
+[SECURITY.md](SECURITY.md).
+
 ## Что умеет
 
 - Раскрывает компактную панель при наведении на чёлку и сворачивает при уходе курсора.

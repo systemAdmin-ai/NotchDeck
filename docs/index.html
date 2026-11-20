@@ -182,6 +182,7 @@
     <ul class="nav" id="nav">
       <li><a href="#overview" data-i18n="nav.overview">Обзор</a></li>
       <li><a href="#install" data-i18n="nav.install">Установка</a></li>
+      <li><a href="#official" data-i18n="nav.official">Источники</a></li>
       <li><a href="#features" data-i18n="nav.features">Возможности</a></li>
       <li><a href="#keyboard" data-i18n="nav.keyboard">Клавиатура</a></li>
       <li><a href="#themes" data-i18n="nav.themes">Оформления</a></li>
@@ -243,6 +244,12 @@
         <tr><td data-i18n="in.r4">Разрешения</td><td data-i18n="in.r4v">мониторинг ввода — только для режима клавиатуры</td></tr>
       </table>
       <p class="note" data-i18n="in.note">Установка скриптом проверяет контрольную сумму файла: <code>scripts/install.sh</code> из репозитория.</p>
+    </section>
+
+    <section id="official" class="reveal">
+      <h2 data-i18n="of.h">Официальные источники</h2>
+      <p data-i18n="of.p">NotchDeck распространяется только отсюда: релизы на GitHub, Homebrew и этот сайт. «Активированных» и «взломанных» сборок не существует — приложение бесплатное, ломать в нём нечего. Сборка с другого сайта — перепаковка, за её содержимое мы не отвечаем.</p>
+      <p class="note" data-i18n="of.note">Любой файл проверяется по <code>SHA256SUMS.txt</code> из релиза: <code>shasum -a 256 -c SHA256SUMS.txt</code>. Не совпало — файл изменён, не запускайте его.</p>
     </section>
 
     <section id="features" class="reveal">
@@ -360,6 +367,7 @@ open Build/NotchDeck.app</code></pre>
     en:{
       "nav.overview":"Overview","nav.install":"Install","nav.features":"Features","nav.keyboard":"Keyboard",
       "nav.themes":"Themes","nav.screens":"Screenshots","nav.use":"Usage","nav.build":"Build","nav.demo":"Demo",
+      "nav.official":"Sources",
       "side.demo":"Try the notch","side.download":"Download",
       "hero.kicker":"macOS · open source · no ads",
       "hero.h1":"A control panel inside the MacBook notch",
@@ -378,6 +386,9 @@ open Build/NotchDeck.app</code></pre>
       "in.req":"Requirements","in.t1":"Item","in.t2":"Value",
       "in.r1":"System","in.r2":"Chip","in.r3":"Size","in.r3v":"about 4 MB","in.r4":"Permissions","in.r4v":"input monitoring, keyboard mode only",
       "in.note":"The script installer verifies the file checksum: <code>scripts/install.sh</code> in the repository.",
+      "of.h":"Official sources",
+      "of.p":"NotchDeck is distributed only from here: GitHub releases, Homebrew and this site. There are no activated or cracked builds — the app is free, so a crack has nothing to break. A build from any other site is a repack, and we cannot vouch for it.",
+      "of.note":"Verify any file against the release's SHA256SUMS.txt: <code>shasum -a 256 -c SHA256SUMS.txt</code>. A mismatch means the file was modified — do not run it.",
       "ft.h":"Features",
       "ft.a":"Readings","ft.ap":"CPU load, memory, temperature, battery, network, uptime, disk, microphone and a recording timer. Hide the ones you don't need.",
       "ft.b":"Actions","ft.bp":"Clipboard, screenshot, recording, notes and keyboard as a separate row.",

@@ -100,6 +100,27 @@ drops the Accessibility permission after the first rebuild:
 The same mechanism as a standalone repository usable in any project:
 [systemAdmin-ai/macos-local-codesign](https://github.com/systemAdmin-ai/macos-local-codesign).
 
+## Where to download
+
+NotchDeck comes from exactly three places:
+
+- **Releases** — https://github.com/systemAdmin-ai/NotchDeck/releases
+- **Homebrew** — `brew install --cask systemAdmin-ai/notchdeck/notchdeck`
+- **This site** — https://systemAdmin-ai.github.io/NotchDeck/
+
+There is no paid, "activated" or "cracked" version: the app is free and MIT-licensed, so
+a crack has nothing to break. If another site offers NotchDeck, it is a repack, and we
+cannot vouch for what was added to it.
+
+Every release ships `SHA256SUMS.txt`. Check the file you downloaded before opening it:
+
+```sh
+shasum -a 256 -c SHA256SUMS.txt
+```
+
+A mismatch means the file was modified. Tell us instead of running it — see
+[SECURITY.md](SECURITY.md).
+
 ## Screenshots
 
 These are **version 2.0 component renders with synthetic demo data**. They contain no personal app shortcuts, VPN status or user preferences.
